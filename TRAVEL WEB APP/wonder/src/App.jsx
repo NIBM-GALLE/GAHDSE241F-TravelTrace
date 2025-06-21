@@ -7,6 +7,10 @@ import Home from './components/Home';
 import CreateTrail from './components/CreateTrail';
 import Profile from './components/Profile';
 import Search from './components/Search';
+import About from './components/About';
+import Support from './components/Support'; // adjust the path if needed
+
+
 
 const theme = createTheme({
   palette: {
@@ -71,6 +75,24 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Search />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/about"
+            element={
+              <ProtectedRoute>
+                <About />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/support"
+            element={
+              <ProtectedRoute>
+                <Support />
               </ProtectedRoute>
             }
           />

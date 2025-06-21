@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Paper,
 } from '@mui/material';
 import { PhotoCamera, Edit } from '@mui/icons-material';
 import axios from 'axios';
@@ -42,9 +43,9 @@ const Profile = () => {
         });
 
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/api/users/${userData.id}/trails`, {
+        const response = await axios.get(`http://localhost:8080/api/users/${userData.id}/trails`, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           }
         });
         setUserTrails(response.data);
@@ -67,12 +68,11 @@ const Profile = () => {
       const token = localStorage.getItem('token');
       const response = await axios.put(`http://localhost:5000/api/users/${user.id}`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
-      
-      // Update local storage with new user data
+
       const updatedUser = { ...user, profile_image_url: response.data.profile_image_url };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -84,13 +84,12 @@ const Profile = () => {
   const handleEditSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(`http://localhost:5000/api/users/${user.id}`, editForm, {
+      await axios.put(`http://localhost:5000/api/users/${user.id}`, editForm, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
-      
-      // Update local storage with new user data
+
       const updatedUser = { ...user, ...editForm };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -100,103 +99,111 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', pb: 7 }}>
-      <Container maxWidth="sm">
-        <Box sx={{ pt: 4, pb: 3, textAlign: 'center' }}>
-          <Box sx={{ position: 'relative', display: 'inline-block' }}>
-            <Avatar
-              src={user.profile_image_url}
-              alt={user.username}
-              sx={{ width: 120, height: 120, mb: 2 }}
-            />
-            <IconButton
-              component="label"
-              sx={{
-                position: 'absolute',
-                bottom: 16,
-                right: -8,
-                bgcolor: '#6B4EFF',
-                '&:hover': { bgcolor: '#5B3FEF' },
-              }}
-            >
-              <PhotoCamera sx={{ color: 'white' }} />
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleProfileImageUpload}
-              />
-            </IconButton>
-          </Box>
+    <>
+      <Navbar title="My Profile" backButton showBottomNav={false} />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              {user.username}
-            </Typography>
-            <IconButton onClick={() => setOpenEdit(true)} sx={{ ml: 1 }}>
-              <Edit />
-            </IconButton>
-          </Box>
-          
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
-            {user.email}
-          </Typography>
-          <Typography color="text.secondary">
-            {user.bio || 'No bio added yet'}
-          </Typography>
-        </Box>
-
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-            My Trails
-          </Typography>
-
-          <Grid container spacing={2}>
-            {userTrails.map((trail) => (
-              <Grid item xs={12} key={trail.trail_id}>
-                <Card>
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={trail.photo_url || '/default-trail.jpg'}
-                    alt={trail.name}
+      {/* Body Container */}
+      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', pt: 10, pb: 7 }}>
+        <Container maxWidth="sm">
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+            {/* Profile Avatar and Edit */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <Avatar
+                  src={user.profile_image_url}
+                  alt={user.username}
+                  sx={{ width: 120, height: 120, mb: 2 }}
+                />
+                <IconButton
+                  component="label"
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    right: -8,
+                    bgcolor: '#6B4EFF',
+                    '&:hover': { bgcolor: '#5B3FEF' },
+                  }}
+                >
+                  <PhotoCamera sx={{ color: 'white' }} />
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleProfileImageUpload}
                   />
-                  <CardContent>
-                    <Typography variant="h6" component="div">
-                      {trail.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {trail.short_description}
-                    </Typography>
-                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ color: '#6B4EFF', borderColor: '#6B4EFF' }}
-                      >
-                        View on Map
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ color: '#6B4EFF', borderColor: '#6B4EFF' }}
-                      >
-                        Details
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Container>
+                </IconButton>
+              </Box>
 
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                  {user.username}
+                </Typography>
+                <IconButton onClick={() => setOpenEdit(true)} sx={{ ml: 1 }}>
+                  <Edit />
+                </IconButton>
+              </Box>
+
+              <Typography color="text.secondary" sx={{ mb: 1 }}>
+                {user.email}
+              </Typography>
+              <Typography color="text.secondary">
+                {user.bio || 'No bio added yet'}
+              </Typography>
+            </Box>
+
+            {/* Trails Section */}
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                My Trails
+              </Typography>
+
+              <Grid container spacing={2}>
+                {userTrails.map((trail) => (
+                  <Grid item xs={12} key={trail.trail_id}>
+                    <Card>
+                      <CardMedia
+                        component="img"
+                        height="140"
+                        image={trail.photo_url || '/default-trail.jpg'}
+                        alt={trail.name}
+                      />
+                      <CardContent>
+                        <Typography variant="h6" component="div">
+                          {trail.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {trail.short_description}
+                        </Typography>
+                        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ color: '#6B4EFF', borderColor: '#6B4EFF' }}
+                          >
+                            View on Map
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{ color: '#6B4EFF', borderColor: '#6B4EFF' }}
+                          >
+                            Details
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
+
+      {/* Edit Profile Dialog */}
       <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
@@ -229,10 +236,8 @@ const Profile = () => {
           <Button onClick={handleEditSubmit} variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
-
-      <Navbar />
-    </Box>
+    </>
   );
 };
 
-export default Profile; 
+export default Profile;
