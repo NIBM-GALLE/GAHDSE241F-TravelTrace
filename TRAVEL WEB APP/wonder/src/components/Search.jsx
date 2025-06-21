@@ -26,7 +26,7 @@ const Search = () => {
   useEffect(() => {
     const fetchTrails = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/trails');
+        const response = await axios.get('http://localhost:5000/api/trails');
         setTrails(response.data);
         setFilteredTrails(response.data);
       } catch (error) {
@@ -40,16 +40,17 @@ const Search = () => {
   useEffect(() => {
     let filtered = trails;
 
+    // Filter by category
     if (selectedCategory !== 'All') {
-      filtered = filtered.filter((trail) => trail.category === selectedCategory);
+      filtered = filtered.filter(trail => trail.category === selectedCategory);
     }
 
+    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (trail) =>
-          trail.name.toLowerCase().includes(query) ||
-          trail.short_description.toLowerCase().includes(query)
+      filtered = filtered.filter(trail =>
+        trail.name.toLowerCase().includes(query) ||
+        trail.short_description.toLowerCase().includes(query)
       );
     }
 
@@ -57,101 +58,66 @@ const Search = () => {
   }, [selectedCategory, searchQuery, trails]);
 
   return (
-    <>
+    <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', pb: 7 }}>
+      <Container maxWidth="sm" sx={{ pt: 2 }}>
+        <TextField
+          fullWidth
+          placeholder="Search trails..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <TextField
+          select
+          fullWidth
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          sx={{ mb: 3 }}
+        >
+          {categories.map((category) => (
+            <MenuItem key={category} value={category}>
+              {category}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <Grid container spacing={2}>
+          {filteredTrails.map((trail) => (
+            <Grid item xs={12} key={trail.trail_id}>
+              <Card>
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={trail.photo_url || '/default-trail.jpg'}
+                  alt={trail.name}
+                />
+                <CardContent>
+                  <Typography variant="h6" component="div">
+                    {trail.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {trail.short_description}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Category: {trail.category}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
       <Navbar />
-
-      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', pt: 14, pb: 7 }}>
-        <Container maxWidth="md">
-          {/* Search Bar */}
-          <TextField
-            fullWidth
-            placeholder="Search trails..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Category Filter */}
-          <TextField
-            select
-            fullWidth
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            sx={{ mb: 4 }}
-          >
-            {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          {/* Trail List */}
-          <Grid container spacing={3}>
-            {filteredTrails.length > 0 ? (
-              filteredTrails.map((trail) => (
-                <Grid item xs={12} sm={6} md={4} key={trail.trail_id}>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      cursor: 'pointer',
-                      '&:hover': { boxShadow: 6 },
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="160"
-                      image={trail.photo_url || '/default-trail.jpg'}
-                      alt={trail.name}
-                    />
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        {trail.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {trail.short_description}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 1, display: 'block' }}
-                      >
-                        Category: {trail.category}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))
-            ) : (
-              <Grid item xs={12}>
-                <Typography variant="body1" color="text.secondary" align="center">
-                  No trails found matching your criteria.
-                </Typography>
-              </Grid>
-            )}
-          </Grid>
-        </Container>
-      </Box>
-    </>
+    </Box>
   );
 };
 
-export default Search;
+export default Search; 
