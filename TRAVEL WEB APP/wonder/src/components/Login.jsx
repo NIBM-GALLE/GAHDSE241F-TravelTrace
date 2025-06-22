@@ -1,31 +1,55 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, TextField, Button, Typography, Container, IconButton, InputAdornment } from '@mui/material';
-import { Email, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Container,
+  IconButton,
+  InputAdornment
+} from '@mui/material';
+import { Email, Lock, Visibility, VisibilityOff, ArrowForward, Security } from '@mui/icons-material';
 
 const Login = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    adminPin: ''
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const ADMIN_PIN = 'AD456@';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleUserLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/login', formData);
+      const response = await axios.post('http://localhost:8080/api/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       navigate('/home');
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred');
+      setError(err.response?.data?.error || 'Login failed');
+    }
+  };
+
+  const handleAdminLogin = () => {
+    if (formData.adminPin === ADMIN_PIN) {
+      navigate('/admindashboard');
+    } else {
+      setError('Invalid admin pin');
     }
   };
 
@@ -47,7 +71,8 @@ const Login = () => {
           Welcome Back!
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+        {/* ✅ USER LOGIN SECTION */}
+        <Box component="form" onSubmit={handleUserLogin} sx={{ width: '100%' }}>
           <TextField
             margin="normal"
             required
@@ -55,18 +80,18 @@ const Login = () => {
             id="email"
             label="Email"
             name="email"
-            autoComplete="email"
-            autoFocus
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <Email />
                 </InputAdornment>
-              ),
+              )
             }}
           />
+
           <TextField
             margin="normal"
             required
@@ -75,9 +100,9 @@ const Login = () => {
             label="Password"
             type={showPassword ? 'text' : 'password'}
             id="password"
-            autoComplete="current-password"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="current-password"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -86,23 +111,13 @@ const Login = () => {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
-              ),
+              )
             }}
           />
-
-          {error && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
-          )}
 
           <Button
             type="submit"
@@ -112,25 +127,60 @@ const Login = () => {
               mt: 3,
               mb: 2,
               bgcolor: '#6B4EFF',
-              '&:hover': {
-                bgcolor: '#5B3FEF'
-              }
+              '&:hover': { bgcolor: '#5B3FEF' }
             }}
           >
             Sign In
           </Button>
+        </Box>
 
-          <Box sx={{ textAlign: 'center', mt: 2 }}>
-            <Link to="/signup" style={{ textDecoration: 'none' }}>
-              <Typography color="primary">
-                Don't have an account? Sign Up
-              </Typography>
-            </Link>
+        {/* ✅ ADMIN PIN SECTION */}
+        <Box sx={{ width: '100%', mt: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            If you are an admin, please enter the pin here:
+          </Typography>
+
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              name="adminPin"
+              label="Admin PIN"
+              type="password"
+              value={formData.adminPin}
+              onChange={handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Security />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <IconButton
+              onClick={handleAdminLogin}
+              sx={{ ml: 1, bgcolor: '#6B4EFF', color: 'white', '&:hover': { bgcolor: '#5B3FEF' } }}
+            >
+              <ArrowForward />
+            </IconButton>
           </Box>
+        </Box>
+
+        {/* ✅ ERROR DISPLAY */}
+        {error && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
+        )}
+
+        {/* ✅ SIGN UP LINK */}
+        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Link to="/signup" style={{ textDecoration: 'none' }}>
+            <Typography color="primary">Don't have an account? Sign Up</Typography>
+          </Link>
         </Box>
       </Box>
     </Container>
   );
 };
 
-export default Login; 
+export default Login;

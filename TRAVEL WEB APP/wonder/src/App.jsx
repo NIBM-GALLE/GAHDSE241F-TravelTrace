@@ -9,6 +9,7 @@ import Profile from './components/Profile';
 import Search from './components/Search';
 import About from './components/About';
 import Support from './components/Support'; // adjust the path if needed
+import AdminDashboard from './components/AdminDashboard';
 
 
 
@@ -96,6 +97,8 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/admin" element={<AdminDashboard />} />
+
         </Routes>
       </Router>
     </ThemeProvider>

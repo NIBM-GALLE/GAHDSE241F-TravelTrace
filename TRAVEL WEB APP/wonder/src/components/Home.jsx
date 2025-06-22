@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Rating, 
-  Grid, 
-  Container 
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  CardMedia,
+  Rating,
+  Grid,
+  Container
 } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import axios from 'axios';
@@ -43,20 +43,51 @@ const Home = () => {
     <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh' }}>
       <Navbar />
 
-      <Container maxWidth="lg" sx={{ pt: 100, pb: 40 }}>
-        {/* Featured Trails with Background Image */}
+      {/* ✅ Full Background Image Section with Floating Cloud Description */}
+      <Box
+        sx={{
+          width: '100%',
+          height: '85vh',
+          position: 'relative',
+          backgroundImage: `url('/background.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* ✅ Description in Cloud-like Box */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            right: '10%',
+            transform: 'translateY(-50%)',
+            bgcolor: 'rgba(255, 255, 255, 0.85)',
+            boxShadow: 6,
+            borderRadius: '50% 50% 45% 55% / 55% 45% 55% 45%',
+            p: 4,
+            maxWidth: 400,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="body1" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
+            Create trails for your past, present, and future journeys by adding photos,
+            videos and articles to your trail.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* ✅ Featured Trails */}
+      <Container maxWidth="lg" sx={{ pt: 6, pb: 4 }}>
         <Box
           sx={{
             mb: 6,
             borderRadius: 4,
             overflow: 'hidden',
             position: 'relative',
-            backgroundImage: `url('\background_img.jpg')`, // your background image path
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
             p: 4,
-            //color: 'white',
+            color: 'white',
+            backgroundColor: '#333',
           }}
         >
           <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'bold' }}>
@@ -71,7 +102,7 @@ const Home = () => {
                 cursor: 'pointer',
                 height: 300,
                 position: 'relative',
-                bgcolor: 'rgba(0,0,0,0.5)', // overlay for readability
+                bgcolor: 'rgba(0,0,0,0.5)',
                 color: 'white',
               }}
             >
@@ -91,16 +122,14 @@ const Home = () => {
                   p: 2,
                 }}
               >
-                <Typography variant="h5" component="div">
-                  {trail.name}
-                </Typography>
+                <Typography variant="h5">{trail.name}</Typography>
                 <Typography variant="body2">{trail.short_description}</Typography>
               </Box>
             </Card>
           ))}
         </Box>
 
-        {/* Popular Trails */}
+        {/* ✅ Popular Trails */}
         <Box sx={{ mb: 6 }}>
           <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'bold' }}>
             Popular Trails
@@ -127,9 +156,7 @@ const Home = () => {
                   />
                   <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <CardContent>
-                      <Typography variant="h6" component="div">
-                        {trail.name}
-                      </Typography>
+                      <Typography variant="h6">{trail.name}</Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                         {trail.short_description}
                       </Typography>
