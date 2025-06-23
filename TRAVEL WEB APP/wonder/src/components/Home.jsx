@@ -7,7 +7,7 @@ import {
   CardMedia,
   Rating,
   Grid,
-  Container
+  Container,
 } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import axios from 'axios';
@@ -39,11 +39,15 @@ const Home = () => {
     navigate(`/trails/${trailId}`);
   };
 
+  const descriptionText =
+    'Create trails for your past, present, and future journeys by adding photos, videos and articles to your trail.';
+  const words = descriptionText.split(' ');
+
   return (
     <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh' }}>
       <Navbar />
 
-      {/* ✅ Full Background Image Section with Floating Cloud Description */}
+      {/* ✅ Background Image with Animated Description */}
       <Box
         sx={{
           width: '100%',
@@ -53,44 +57,77 @@ const Home = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          px: 4,
         }}
       >
-        {/* ✅ Description in Cloud-like Box */}
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            right: '10%',
-            transform: 'translateY(-50%)',
-            bgcolor: 'rgba(255, 255, 255, 0.85)',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 4,
+            maxWidth: 420,
+            p: 3,
             boxShadow: 6,
-            borderRadius: '50% 50% 45% 55% / 55% 45% 55% 45%',
-            p: 4,
-            maxWidth: 400,
-            textAlign: 'center',
           }}
         >
-          <Typography variant="body1" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
-            Create trails for your past, present, and future journeys by adding photos,
-            videos and articles to your trail.
+          <Typography
+            variant="body1"
+            sx={{
+              fontStyle: 'italic',
+              fontWeight: 500,
+              color: '#333',
+              lineHeight: 1.7,
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '4px',
+            }}
+          >
+            {words.map((word, index) => (
+              <span
+                key={index}
+                className="word-fade"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                {word}
+              </span>
+            ))}
           </Typography>
         </Box>
+
+        {/* Animation Styles */}
+        <style>
+          {`
+            .word-fade {
+              opacity: 0;
+              transform: translateY(10px);
+              animation: fadeInUp 0.6s ease-out forwards;
+              display: inline-block;
+            }
+
+            @keyframes fadeInUp {
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `}
+        </style>
       </Box>
 
-      {/* ✅ Featured Trails */}
+      {/* ✅ Featured Trails Section - White Background with Soft Shadow */}
       <Container maxWidth="lg" sx={{ pt: 6, pb: 4 }}>
         <Box
           sx={{
             mb: 6,
             borderRadius: 4,
-            overflow: 'hidden',
-            position: 'relative',
             p: 4,
-            color: 'white',
-            backgroundColor: '#333',
+            backgroundColor: '#FFFFFF',
+            boxShadow: 3,
           }}
         >
-          <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'bold' }}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
             Featured Trails
           </Typography>
 
@@ -102,8 +139,6 @@ const Home = () => {
                 cursor: 'pointer',
                 height: 300,
                 position: 'relative',
-                bgcolor: 'rgba(0,0,0,0.5)',
-                color: 'white',
               }}
             >
               <CardMedia
@@ -111,7 +146,7 @@ const Home = () => {
                 height="300"
                 image={trail.photo_url || '/default-trail.jpg'}
                 alt={trail.name}
-                sx={{ opacity: 0.7 }}
+                sx={{ opacity: 0.8 }}
               />
               <Box
                 sx={{
@@ -120,6 +155,8 @@ const Home = () => {
                   left: 0,
                   right: 0,
                   p: 2,
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  color: 'white',
                 }}
               >
                 <Typography variant="h5">{trail.name}</Typography>
@@ -129,9 +166,9 @@ const Home = () => {
           ))}
         </Box>
 
-        {/* ✅ Popular Trails */}
+        {/* ✅ Popular Trails Section */}
         <Box sx={{ mb: 6 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 'bold' }}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
             Popular Trails
           </Typography>
 
