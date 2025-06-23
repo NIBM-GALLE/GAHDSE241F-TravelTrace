@@ -10,6 +10,8 @@ import Search from './components/Search';
 import About from './components/About';
 import Support from './components/Support'; // adjust the path if needed
 import AdminDashboard from './components/AdminDashboard';
+import ManageUsers from './components/ManageUsers';
+import ManageTrails from './components/ManageTrails';
 
 
 
@@ -97,7 +99,10 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
+          <Route path="/admin/trails" element={<ManageTrails />} />
+
 
         </Routes>
       </Router>
