@@ -184,7 +184,7 @@ const CreateTrail = () => {
               Set Trail Coordinates
             </Typography>
 
-            <LoadScript googleMapsApiKey="Enter Your API key here">   
+            <LoadScript googleMapsApiKey="Add your API key">   
               <Box sx={{ mb: 2 }}>
                 <Button
                   variant={isSettingStart ? 'contained' : 'outlined'}
