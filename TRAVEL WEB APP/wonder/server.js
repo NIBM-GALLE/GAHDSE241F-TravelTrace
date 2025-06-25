@@ -51,7 +51,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Authentication middleware
+// JWT middleware
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Access denied' });
@@ -165,6 +165,27 @@ app.put('/api/users/:id', verifyToken, upload.single('profile_image'), (req, res
   );
 });
 
+// Feedback route (new)
+app.post('/api/feedback', (req, res) => {
+  const { emoji, text, timestamp } = req.body;
+
+  if (!emoji && !text) {
+    return res.status(400).json({ error: 'Feedback cannot be empty' });
+  }
+
+  db.query(
+    'INSERT INTO feedbacks (emoji, text, timestamp) VALUES (?, ?, ?)',
+    [emoji || null, text || null, timestamp || new Date()],
+    (err, result) => {
+      if (err) {
+        console.error('Error saving feedback:', err);
+        return res.status(500).json({ error: 'Failed to save feedback' });
+      }
+      res.status(201).json({ message: 'Feedback received', feedbackId: result.insertId });
+    }
+  );
+});
+
 // API routes
 app.use('/api/trails', trailsRouter);
 
@@ -184,3 +205,15 @@ dirs.forEach(dir => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+
+//Query to create feedbacks table
+/*CREATE TABLE feedbacks (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  user_name VARCHAR(255),
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+  message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);*/
+

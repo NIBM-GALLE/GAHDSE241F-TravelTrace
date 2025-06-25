@@ -112,7 +112,6 @@ const Support = () => {
   const [input, setInput] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [selectedEmoji, setSelectedEmoji] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
 
@@ -132,28 +131,40 @@ const Support = () => {
     setInput('');
   };
 
-  const handleFeedbackSubmit = () => {
+  const handleFeedbackSubmit = async () => {
     if (!selectedEmoji && !feedbackText) return;
 
     const feedbackEntry = {
-      emoji: selectedEmoji?.label,
+      emoji: selectedEmoji?.label || null,
       text: feedbackText,
       timestamp: new Date().toISOString(),
     };
 
-    const existing = JSON.parse(localStorage.getItem('feedbacks') || '[]');
-    existing.push(feedbackEntry);
-    localStorage.setItem('feedbacks', JSON.stringify(existing));
+    try {
+      const response = await fetch('http://localhost:8080/api/feedbacks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackEntry),
+      });
 
-    setSelectedEmoji(null);
-    setFeedbackText('');
-    alert('Thanks for your feedback!');
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      setSelectedEmoji(null);
+      setFeedbackText('');
+      alert('Thanks for your feedback!');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback. Please try again later.');
+    }
   };
 
   return (
     <>
       <Navbar title={t.support} backButton showBottomNav={false} />
-
       <Box sx={{ pt: { xs: 9, sm: 15 }, backgroundColor: '#fff', px: 2, pb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <ToggleButtonGroup
@@ -174,9 +185,7 @@ const Support = () => {
         <Container maxWidth="md">
           {/* Contact Info */}
           <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-            <Typography variant="h4" align="center" gutterBottom>
-              {t.support}
-            </Typography>
+            <Typography variant="h4" align="center" gutterBottom>{t.support}</Typography>
             <Typography align="center" paragraph>{t.contact}</Typography>
             <Typography>📧 <Link href="mailto:support@traveltrace.coms">{t.email}</Link></Typography>
             <Typography>📞 <Link href="tel:+94123456789">{t.phone}</Link></Typography>
@@ -202,10 +211,7 @@ const Support = () => {
             </Box>
             <List sx={{ maxHeight: 300, overflowY: 'auto' }}>
               {messages.map((msg, i) => (
-                <ListItem
-                  key={i}
-                  sx={{ flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row' }}
-                >
+                <ListItem key={i} sx={{ flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row' }}>
                   <ListItemAvatar>
                     <Avatar>{msg.sender === 'user' ? <PersonIcon /> : <SupportAgentIcon />}</Avatar>
                   </ListItemAvatar>
@@ -232,7 +238,7 @@ const Support = () => {
             </Box>
           </Paper>
 
-          {/* Feedback Section */}
+          {/* Feedback */}
           <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
             <Typography variant="h6" gutterBottom>{t.feedbackQuestion}</Typography>
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
