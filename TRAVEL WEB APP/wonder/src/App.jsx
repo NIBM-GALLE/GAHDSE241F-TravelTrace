@@ -12,6 +12,7 @@ import Support from './components/Support'; // adjust the path if needed
 import AdminDashboard from './components/AdminDashboard';
 import ManageUsers from './components/ManageUsers';
 import ManageTrails from './components/ManageTrails';
+import AdminFeedback from './components/AdminFeedback';
 
 
 
@@ -145,6 +146,14 @@ const App = () => {
             element={
               <AdminProtectedRoute>
                 <ManageTrails />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/feedback"
+            element={
+              <AdminProtectedRoute>
+                <AdminFeedback />
               </AdminProtectedRoute>
             }
           />

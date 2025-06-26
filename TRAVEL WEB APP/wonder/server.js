@@ -146,6 +146,26 @@ app.get('/api/users/:id/trails', (req, res) => {
   });
 });
 
+// Get all users (or filter by role)
+app.get('/api/users', verifyToken, (req, res) => {
+  const { role } = req.query;
+  let query = 'SELECT user_id, username, email, role, created_at, profile_image_url, bio FROM users';
+  const params = [];
+
+  if (role) {
+    query += ' WHERE role = ?';
+    params.push(role);
+  }
+
+  db.query(query, params, (err, results) => {
+    if (err) {
+      console.error('Error fetching users:', err);
+      return res.status(500).json({ error: 'Error fetching users' });
+    }
+    res.json(results);
+  });
+});
+
 // User profile routes
 app.put('/api/users/:id', verifyToken, upload.single('profile_image'), (req, res) => {
   const { bio } = req.body;

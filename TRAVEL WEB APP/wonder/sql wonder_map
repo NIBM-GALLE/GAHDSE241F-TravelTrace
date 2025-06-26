@@ -58,7 +58,19 @@ CREATE TABLE IF NOT EXISTS `trails` (
 
  
 
- CREATE TABLE IF NOT EXISTS `users` (
+ 
+--
+ --
+
+INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `role`, `created_at`, `profile_image_url`, `bio`) VALUES
+(1, 'nethmitk33@gmail.com', 'nethmitk33@gmail.com', '$2a$10$G0qGGc4N8WAYbxPWE8iuEOury3WmrYhlQSlG4BaOOP9L.p.UaHTyy', 'user', '2025-06-10 14:27:39', NULL, 'happy travel'),
+(2, 'randula ruwashantha', 'randula@gmail.com', '$2a$10$Wf9Cq0m73Zk4.X5JB5fdWOYHfcIaAWlr3pjSubCuZjaUPRi3D75Ni', 'user', '2025-06-10 18:52:46', NULL, NULL),
+(3, 'MS.MAHINDA THALIKORALAGE', 'MAHI@gmail.com', '$2a$10$m4lcpJKum3HSBx67bUVL..A5rHyKh5K1UpeFVHheOwJLDAKPgqayy', 'user', '2025-06-10 23:10:54', NULL, NULL),
+  a (6, 'MS.RUWAN', 'ruwan@gmail.com', '$2a$10$/TNyF2lrliQwYW7I.Q9Gwu2FCbZ1pd2TzQ4CcazBed/jy5jZ/LxXe', 'user', '2025-06-11 06:11:19', NULL, NULL),
+(7, 'MS.PREBATH', 'PREBATH@GMAIL.COM', '$2a$10$V2Od7HLe5nFAcPDAmZpsYu3gJFghKcJFDwBjIEW9VCxQFJiiO35WC', 'user', '2025-06-11 07:14:03', NULL, NULL),
+(8, 'TT-nethmi', 'ishara@greenwave.com', '$2a$10$O9dtDocEiZr5WUqQQhSskuNQ9LPFxwEGP7Gz3NPDZR0cWwmFBhHsO', 'user', '2025-06-26 06:23:18', NULL, NULL);
+COMMIT;
+CREATE TABLE IF NOT EXISTS `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -70,19 +82,5 @@ CREATE TABLE IF NOT EXISTS `trails` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
- --
-
-INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `role`, `created_at`, `profile_image_url`, `bio`) VALUES
-(1, 'nethmitk33@gmail.com', 'nethmitk33@gmail.com', '$2a$10$G0qGGc4N8WAYbxPWE8iuEOury3WmrYhlQSlG4BaOOP9L.p.UaHTyy', 'user', '2025-06-10 14:27:39', NULL, 'happy travel'),
-(2, 'randula ruwashantha', 'randula@gmail.com', '$2a$10$Wf9Cq0m73Zk4.X5JB5fdWOYHfcIaAWlr3pjSubCuZjaUPRi3D75Ni', 'user', '2025-06-10 18:52:46', NULL, NULL),
-(3, 'MS.MAHINDA THALIKORALAGE', 'MAHI@gmail.com', '$2a$10$m4lcpJKum3HSBx67bUVL..A5rHyKh5K1UpeFVHheOwJLDAKPgqayy', 'user', '2025-06-10 23:10:54', NULL, NULL),
-(4, 'Rashmi ', 'r@gmail.com', '$2a$10$GjT2f3TToHMAvWiOBdwOYeCARgexnhw4/Li2zoQ03C0wc/kdPw4/e', 'user', '2025-06-11 05:43:22', NULL, NULL),
-(5, 'hirusi', 'hiru@gmail.com', '$2a$10$OBSUV4TGWqEC.FzetklLcetkQLztQdXi0UgjqwD0mXREhRIaUvuYq', 'user', '2025-06-11 06:10:26', NULL, NULL),
-(6, 'MS.RUWAN', 'ruwan@gmail.com', '$2a$10$/TNyF2lrliQwYW7I.Q9Gwu2FCbZ1pd2TzQ4CcazBed/jy5jZ/LxXe', 'user', '2025-06-11 06:11:19', NULL, NULL),
-(7, 'MS.PREBATH', 'PREBATH@GMAIL.COM', '$2a$10$V2Od7HLe5nFAcPDAmZpsYu3gJFghKcJFDwBjIEW9VCxQFJiiO35WC', 'user', '2025-06-11 07:14:03', NULL, NULL),
-(8, 'TT-nethmi', 'ishara@greenwave.com', '$2a$10$O9dtDocEiZr5WUqQQhSskuNQ9LPFxwEGP7Gz3NPDZR0cWwmFBhHsO', 'user', '2025-06-26 06:23:18', NULL, NULL);
-COMMIT;
- 
+)  
+UPDATE users SET role = 'admin' WHERE email = 'your_newly_registered_email@example.com';
