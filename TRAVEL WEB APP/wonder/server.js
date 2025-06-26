@@ -100,8 +100,8 @@ app.post('/api/login', (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
 
-    const token = jwt.sign({ id: user.user_id }, 'your_jwt_secret');
-    res.json({ token, user: { id: user.user_id, username: user.username, email: user.email } });
+    const token = jwt.sign({ id: user.user_id, role: user.role }, 'your_jwt_secret');
+    res.json({ token, user: { id: user.user_id, username: user.username, email: user.email, role: user.role } });
   });
 });
 

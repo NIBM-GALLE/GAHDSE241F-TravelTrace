@@ -1,0 +1,88 @@
+ 
+--
+
+ CREATE TABLE IF NOT EXISTS `feedbacks` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `user_name` varchar(255) DEFAULT NULL,
+  `rating` int DEFAULT NULL,
+  `message` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) ;
+
+ 
+
+ CREATE TABLE IF NOT EXISTS `special_points` (
+  `point_id` int NOT NULL AUTO_INCREMENT,
+  `trail_id` int DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `lat` decimal(9,6) DEFAULT NULL,
+  `lng` decimal(9,6) DEFAULT NULL,
+  PRIMARY KEY (`point_id`),
+  KEY `trail_id` (`trail_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+ --
+
+INSERT INTO `special_points` (`point_id`, `trail_id`, `name`, `lat`, `lng`) VALUES
+(1, 1, 'Ruwanwelisaya', 8.349170, 80.388480),
+(2, 1, 'Sri Maha Bodhiya', 8.347890, 80.390120);
+
+-- --------------------------------------------------------
+
+--
+ --
+
+DROP TABLE IF EXISTS `trails`;
+CREATE TABLE IF NOT EXISTS `trails` (
+  `trail_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `category` varchar(50) DEFAULT NULL,
+  `short_description` text,
+  `start_lat` decimal(9,6) DEFAULT NULL,
+  `start_lng` decimal(9,6) DEFAULT NULL,
+  `end_lat` decimal(9,6) DEFAULT NULL,
+  `end_lng` decimal(9,6) DEFAULT NULL,
+  `video_url` varchar(255) DEFAULT NULL,
+  `photo_url` varchar(255) DEFAULT NULL,
+  `trail_date` date DEFAULT NULL,
+  `trail_time` time DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`trail_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ 
+
+ CREATE TABLE IF NOT EXISTS `users` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('user','admin') DEFAULT 'user',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `profile_image_url` varchar(255) DEFAULT NULL,
+  `bio` text,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+ --
+
+INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `role`, `created_at`, `profile_image_url`, `bio`) VALUES
+(1, 'nethmitk33@gmail.com', 'nethmitk33@gmail.com', '$2a$10$G0qGGc4N8WAYbxPWE8iuEOury3WmrYhlQSlG4BaOOP9L.p.UaHTyy', 'user', '2025-06-10 14:27:39', NULL, 'happy travel'),
+(2, 'randula ruwashantha', 'randula@gmail.com', '$2a$10$Wf9Cq0m73Zk4.X5JB5fdWOYHfcIaAWlr3pjSubCuZjaUPRi3D75Ni', 'user', '2025-06-10 18:52:46', NULL, NULL),
+(3, 'MS.MAHINDA THALIKORALAGE', 'MAHI@gmail.com', '$2a$10$m4lcpJKum3HSBx67bUVL..A5rHyKh5K1UpeFVHheOwJLDAKPgqayy', 'user', '2025-06-10 23:10:54', NULL, NULL),
+(4, 'Rashmi ', 'r@gmail.com', '$2a$10$GjT2f3TToHMAvWiOBdwOYeCARgexnhw4/Li2zoQ03C0wc/kdPw4/e', 'user', '2025-06-11 05:43:22', NULL, NULL),
+(5, 'hirusi', 'hiru@gmail.com', '$2a$10$OBSUV4TGWqEC.FzetklLcetkQLztQdXi0UgjqwD0mXREhRIaUvuYq', 'user', '2025-06-11 06:10:26', NULL, NULL),
+(6, 'MS.RUWAN', 'ruwan@gmail.com', '$2a$10$/TNyF2lrliQwYW7I.Q9Gwu2FCbZ1pd2TzQ4CcazBed/jy5jZ/LxXe', 'user', '2025-06-11 06:11:19', NULL, NULL),
+(7, 'MS.PREBATH', 'PREBATH@GMAIL.COM', '$2a$10$V2Od7HLe5nFAcPDAmZpsYu3gJFghKcJFDwBjIEW9VCxQFJiiO35WC', 'user', '2025-06-11 07:14:03', NULL, NULL),
+(8, 'TT-nethmi', 'ishara@greenwave.com', '$2a$10$O9dtDocEiZr5WUqQQhSskuNQ9LPFxwEGP7Gz3NPDZR0cWwmFBhHsO', 'user', '2025-06-26 06:23:18', NULL, NULL);
+COMMIT;
+ 

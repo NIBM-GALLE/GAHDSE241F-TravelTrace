@@ -18,12 +18,10 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    adminPin: ''
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const ADMIN_PIN = 'AD456@';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,17 +37,14 @@ const Login = () => {
 
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/home');
+      
+      if (response.data.user.role === 'admin') {
+        navigate('/admindashboard');
+      } else {
+        navigate('/home');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
-    }
-  };
-
-  const handleAdminLogin = () => {
-    if (formData.adminPin === ADMIN_PIN) {
-      navigate('/admindashboard');
-    } else {
-      setError('Invalid admin pin');
     }
   };
 
@@ -132,37 +127,6 @@ const Login = () => {
           >
             Sign In
           </Button>
-        </Box>
-
-        {/* ✅ ADMIN PIN SECTION */}
-        <Box sx={{ width: '100%', mt: 2 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            If you are an admin, please enter the pin here:
-          </Typography>
-
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <TextField
-              fullWidth
-              name="adminPin"
-              label="Admin PIN"
-              type="password"
-              value={formData.adminPin}
-              onChange={handleChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Security />
-                  </InputAdornment>
-                )
-              }}
-            />
-            <IconButton
-              onClick={handleAdminLogin}
-              sx={{ ml: 1, bgcolor: '#6B4EFF', color: 'white', '&:hover': { bgcolor: '#5B3FEF' } }}
-            >
-              <ArrowForward />
-            </IconButton>
-          </Box>
         </Box>
 
         {/* ✅ ERROR DISPLAY */}
