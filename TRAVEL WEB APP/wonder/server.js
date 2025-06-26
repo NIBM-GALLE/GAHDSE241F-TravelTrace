@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/videos', express.static(path.join(__dirname, 'public/videos')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Database connection
@@ -166,23 +167,50 @@ app.get('/api/users', verifyToken, (req, res) => {
   });
 });
 
-// User profile routes
+// Update user profile (including role, username, email, bio, and profile image)
 app.put('/api/users/:id', verifyToken, upload.single('profile_image'), (req, res) => {
-  const { bio } = req.body;
+  const { username, email, bio, role } = req.body;
   const profile_image_url = req.file ? `/uploads/images/${req.file.filename}` : null;
 
-  const updateData = profile_image_url 
-    ? { bio, profile_image_url }
-    : { bio };
+  let query = 'UPDATE users SET';
+  const params = [];
+  const updates = [];
 
-  db.query(
-    'UPDATE users SET ? WHERE user_id = ?',
-    [updateData, req.params.id],
-    (err) => {
-      if (err) return res.status(500).json({ error: 'Error updating profile' });
-      res.json({ message: 'Profile updated successfully' });
+  if (username) { updates.push('username = ?'); params.push(username); }
+  if (email) { updates.push('email = ?'); params.push(email); }
+  if (bio !== undefined) { updates.push('bio = ?'); params.push(bio); } // Allow setting bio to null/empty
+  if (role) { updates.push('role = ?'); params.push(role); }
+  if (profile_image_url) { updates.push('profile_image_url = ?'); params.push(profile_image_url); }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
+
+  query += ' ' + updates.join(', ') + ' WHERE user_id = ?';
+  params.push(req.params.id);
+
+  db.query(query, params, (err) => {
+    if (err) {
+      console.error('Error updating profile:', err);
+      return res.status(500).json({ error: 'Error updating profile' });
     }
-  );
+    res.json({ message: 'Profile updated successfully' });
+  });
+});
+
+// Delete user
+app.delete('/api/users/:id', verifyToken, (req, res) => {
+  const userId = req.params.id;
+  db.query('DELETE FROM users WHERE user_id = ?', [userId], (err, result) => {
+    if (err) {
+      console.error('Error deleting user:', err);
+      return res.status(500).json({ error: 'Error deleting user' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ message: 'User deleted successfully' });
+  });
 });
 
 // Feedback route (new)
@@ -208,6 +236,87 @@ app.post('/api/feedback', (req, res) => {
 
 // API routes
 app.use('/api/trails', trailsRouter);
+
+// Update trail
+app.put('/api/trails/:id', verifyToken, upload.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]), (req, res) => {
+  const { name, category, short_description, start_lat, start_lng, end_lat, end_lng, trail_date, trail_time } = req.body;
+  const photo_url = req.files?.photo ? `/uploads/images/${req.files.photo[0].filename}` : null;
+  const video_url = req.files?.video ? `/uploads/videos/${req.files.video[0].filename}` : null;
+
+  let query = 'UPDATE trails SET';
+  const params = [];
+  const updates = [];
+
+  if (name) { updates.push('name = ?'); params.push(name); }
+  if (category) { updates.push('category = ?'); params.push(category); }
+  if (short_description) { updates.push('short_description = ?'); params.push(short_description); }
+  if (start_lat) { updates.push('start_lat = ?'); params.push(start_lat); }
+  if (start_lng) { updates.push('start_lng = ?'); params.push(start_lng); }
+  if (end_lat) { updates.push('end_lat = ?'); params.push(end_lat); }
+  if (end_lng) { updates.push('end_lng = ?'); params.push(end_lng); }
+  if (trail_date) { updates.push('trail_date = ?'); params.push(trail_date); }
+  if (trail_time) { updates.push('trail_time = ?'); params.push(trail_time); }
+  if (photo_url) { updates.push('photo_url = ?'); params.push(photo_url); }
+  if (video_url) { updates.push('video_url = ?'); params.push(video_url); }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
+
+  query += ' ' + updates.join(', ') + ' WHERE trail_id = ?';
+  params.push(req.params.id);
+
+  db.query(query, params, (err) => {
+    if (err) {
+      console.error('Error updating trail:', err);
+      return res.status(500).json({ error: 'Error updating trail' });
+    }
+    res.json({ message: 'Trail updated successfully' });
+  });
+});
+
+// Delete trail
+app.delete('/api/trails/:id', verifyToken, (req, res) => {
+  const trailId = req.params.id;
+  db.query('DELETE FROM trails WHERE trail_id = ?', [trailId], (err, result) => {
+    if (err) {
+      console.error('Error deleting trail:', err);
+      return res.status(500).json({ error: 'Error deleting trail' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Trail not found' });
+    }
+    res.json({ message: 'Trail deleted successfully' });
+  });
+});
+
+// Dashboard Summary API
+app.get('/api/dashboard/summary', verifyToken, (req, res) => {
+  const summary = {};
+
+  // Get total users
+  db.query('SELECT COUNT(*) AS total_users FROM users', (err, userResults) => {
+    if (err) {
+      console.error('Error fetching total users:', err);
+      return res.status(500).json({ error: 'Error fetching dashboard summary' });
+    }
+    summary.total_users = userResults[0].total_users;
+
+    // Get total trails
+    db.query('SELECT COUNT(*) AS total_trails FROM trails', (err, trailResults) => {
+      if (err) {
+        console.error('Error fetching total trails:', err);
+        return res.status(500).json({ error: 'Error fetching dashboard summary' });
+      }
+      summary.total_trails = trailResults[0].total_trails;
+
+      res.json(summary);
+    });
+  });
+});
 
 // Handle React routing
 app.get('*', (req, res) => {

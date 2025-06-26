@@ -7,6 +7,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   IconButton,
@@ -14,10 +15,9 @@ import {
   CssBaseline,
   Select,
   MenuItem,
+  Tooltip,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import { Edit as EditIcon, Save as SaveIcon, Search as SearchIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import AdminSidebar from './AdminSidebar';
 import axios from 'axios';
 
@@ -78,6 +78,22 @@ const ManageUsers = () => {
     }
   };
 
+  const deleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:8080/api/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        fetchUsers(); // Refresh list after deletion
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -125,67 +141,85 @@ const ManageUsers = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.user_id}>
-                      <TableCell>
-                        {editUserId === user.user_id ? (
-                          <TextField
-                            value={editedUser.username || ''}
-                            onChange={(e) =>
-                              setEditedUser({ ...editedUser, username: e.target.value })
-                            }
-                          />
-                        ) : (
-                          user.username
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editUserId === user.user_id ? (
-                          <TextField
-                            value={editedUser.email || ''}
-                            onChange={(e) =>
-                              setEditedUser({ ...editedUser, email: e.target.value })
-                            }
-                          />
-                        ) : (
-                          user.email
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editUserId === user.user_id ? (
-                          <Select
-                            value={editedUser.role || 'user'}
-                            onChange={(e) =>
-                              setEditedUser({ ...editedUser, role: e.target.value })
-                            }
-                            fullWidth
-                          >
-                            <MenuItem value="user">User</MenuItem>
-                            <MenuItem value="admin">Admin</MenuItem>
-                          </Select>
-                        ) : (
-                          user.role
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell align="right">
-                        {editUserId === user.user_id ? (
-                          <IconButton onClick={saveUser} color="primary">
-                            <SaveIcon />
-                          </IconButton>
-                        ) : (
-                          <IconButton
-                            onClick={() => startEditing(user)}
-                            color="primary"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        )}
-                      </TableCell>
+                  {filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">No users found with role 'user'.</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <TableRow key={user.user_id}>
+                        <TableCell>
+                          {editUserId === user.user_id ? (
+                            <TextField
+                              value={editedUser.username || ''}
+                              onChange={(e) =>
+                                setEditedUser({ ...editedUser, username: e.target.value })
+                              }
+                              size="small"
+                            />
+                          ) : (
+                            user.username
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editUserId === user.user_id ? (
+                            <TextField
+                              value={editedUser.email || ''}
+                              onChange={(e) =>
+                                setEditedUser({ ...editedUser, email: e.target.value })
+                              }
+                              size="small"
+                            />
+                          ) : (
+                            user.email
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editUserId === user.user_id ? (
+                            <Select
+                              value={editedUser.role || 'user'}
+                              onChange={(e) =>
+                                setEditedUser({ ...editedUser, role: e.target.value })
+                              }
+                              fullWidth
+                              size="small"
+                            >
+                              <MenuItem value="user">User</MenuItem>
+                              <MenuItem value="admin">Admin</MenuItem>
+                            </Select>
+                          ) : (
+                            user.role
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell align="right">
+                          {editUserId === user.user_id ? (
+                            <Tooltip title="Save">
+                              <IconButton onClick={saveUser} color="primary">
+                                <SaveIcon />
+                              </IconButton>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Edit">
+                              <IconButton
+                                onClick={() => startEditing(user)}
+                                color="primary"
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          <Tooltip title="Delete">
+                            <IconButton onClick={() => deleteUser(user.user_id)} color="error">
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
