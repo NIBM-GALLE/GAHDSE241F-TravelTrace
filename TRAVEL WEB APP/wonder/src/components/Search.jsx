@@ -26,7 +26,7 @@ const Search = () => {
   useEffect(() => {
     const fetchTrails = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/trails');
+        const response = await axios.get('http://localhost:3000/api/trails');
         setTrails(response.data);
         setFilteredTrails(response.data);
       } catch (error) {

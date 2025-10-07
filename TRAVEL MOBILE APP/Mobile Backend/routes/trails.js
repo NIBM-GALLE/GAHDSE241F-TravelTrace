@@ -9,7 +9,7 @@ const { verifyToken } = require('../middleware/auth');
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'Rash226@',
   database: 'wonder_map'
 });
 

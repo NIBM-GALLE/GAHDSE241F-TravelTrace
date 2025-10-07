@@ -104,7 +104,7 @@ const CreateTrail = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/api/trails', data, {
+      await axios.post('http://localhost:3000/api/trails', data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

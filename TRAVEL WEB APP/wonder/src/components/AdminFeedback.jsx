@@ -33,7 +33,7 @@ const AdminFeedback = () => {
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/feedback');
+        const response = await axios.get('http://localhost:3000/api/feedback');
         setFeedbacks(response.data);
       } catch (error) {
         console.error('Error fetching feedback:', error);

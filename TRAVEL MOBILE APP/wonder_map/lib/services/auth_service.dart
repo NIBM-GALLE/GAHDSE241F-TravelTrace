@@ -7,7 +7,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class AuthService {
   static String get baseUrl {
     // Use localhost for web, 10.0.2.2 for Android emulator
-    return kIsWeb ? 'http://localhost:8080/api' : 'http://10.0.2.2:3000/api';
+    //return kIsWeb ? 'http://localhost:8080/api' : 'http://10.0.2.2:3000/api';
+     return kIsWeb ? 'http://localhost:3000/api' : 'http://10.0.2.2:3000/api';
   }
   final _storage = const FlutterSecureStorage();
 

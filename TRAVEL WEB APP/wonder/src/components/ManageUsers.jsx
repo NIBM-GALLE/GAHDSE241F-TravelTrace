@@ -16,8 +16,16 @@ import {
   Select,
   MenuItem,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-import { Edit as EditIcon, Save as SaveIcon, Search as SearchIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+  Search as SearchIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
 import AdminSidebar from './AdminSidebar';
 import axios from 'axios';
 
@@ -28,6 +36,7 @@ const ManageUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editUserId, setEditUserId] = useState(null);
   const [editedUser, setEditedUser] = useState({});
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     fetchUsers();
@@ -36,14 +45,13 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/users?role=user', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get('http://localhost:3000/api/users?role=user', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching users:', error.response || error.message);
+      showSnackbar('Failed to fetch users', 'error');
     }
   };
 
@@ -53,28 +61,43 @@ const ManageUsers = () => {
 
   const filteredUsers = users.filter(
     (user) =>
-      (user.username?.toLowerCase().includes(searchQuery) ||
-      user.email?.toLowerCase().includes(searchQuery))
+      user.username?.toLowerCase().includes(searchQuery) ||
+      user.email?.toLowerCase().includes(searchQuery)
   );
 
   const startEditing = (user) => {
     setEditUserId(user.user_id);
-    setEditedUser(user);
+    setEditedUser({ ...user });
+  };
+
+  const cancelEditing = () => {
+    setEditUserId(null);
+    setEditedUser({});
+    showSnackbar('Edit cancelled', 'info');
   };
 
   const saveUser = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:8080/api/users/${editUserId}`, editedUser, {
+      const payload = {
+        username: editedUser.username,
+        email: editedUser.email,
+        role: editedUser.role,
+        bio: editedUser.bio // optional, if present
+      };
+      await axios.put(`http://localhost:3000/api/users/${editUserId}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
       fetchUsers();
-      setEditUserId(null);
+      cancelEditing();
+      showSnackbar('User updated successfully', 'success');
     } catch (error) {
-      console.error('Error saving user:', error);
+      console.error('Error saving user:', error.response?.data || error.message);
+      const msg = error.response?.data?.message || 'Failed to update user';
+      showSnackbar(msg, 'error');
     }
   };
 
@@ -82,16 +105,25 @@ const ManageUsers = () => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:8080/api/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        await axios.delete(`http://localhost:3000/api/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        fetchUsers(); // Refresh list after deletion
+        fetchUsers();
+        showSnackbar('User deleted successfully', 'success');
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error('Error deleting user:', error.response?.data || error.message);
+        const msg = error.response?.data?.message || 'Failed to delete user';
+        showSnackbar(msg, 'error');
       }
     }
+  };
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -127,8 +159,10 @@ const ManageUsers = () => {
           </Box>
 
           {/* Users Table */}
-          <Paper elevation={3} sx={{ p: 2, mb: 5 }}>
-            <Typography variant="h6" gutterBottom>User List</Typography>
+          <Paper elevation={3} sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              User List
+            </Typography>
             <TableContainer>
               <Table>
                 <TableHead>
@@ -143,11 +177,16 @@ const ManageUsers = () => {
                 <TableBody>
                   {filteredUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">No users found with role 'user'.</TableCell>
+                      <TableCell colSpan={5} align="center">
+                        No users found with role 'user'.
+                      </TableCell>
                     </TableRow>
                   ) : (
                     filteredUsers.map((user) => (
-                      <TableRow key={user.user_id}>
+                      <TableRow
+                        key={user.user_id}
+                        sx={editUserId === user.user_id ? { backgroundColor: 'rgba(107,78,255,0.08)' } : {}}
+                      >
                         <TableCell>
                           {editUserId === user.user_id ? (
                             <TextField
@@ -181,7 +220,6 @@ const ManageUsers = () => {
                               onChange={(e) =>
                                 setEditedUser({ ...editedUser, role: e.target.value })
                               }
-                              fullWidth
                               size="small"
                             >
                               <MenuItem value="user">User</MenuItem>
@@ -196,26 +234,32 @@ const ManageUsers = () => {
                         </TableCell>
                         <TableCell align="right">
                           {editUserId === user.user_id ? (
-                            <Tooltip title="Save">
-                              <IconButton onClick={saveUser} color="primary">
-                                <SaveIcon />
-                              </IconButton>
-                            </Tooltip>
+                            <>
+                              <Tooltip title="Save">
+                                <IconButton onClick={saveUser} color="primary">
+                                  <SaveIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Cancel">
+                                <IconButton onClick={cancelEditing} color="inherit">
+                                  <CancelIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </>
                           ) : (
-                            <Tooltip title="Edit">
-                              <IconButton
-                                onClick={() => startEditing(user)}
-                                color="primary"
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
+                            <>
+                              <Tooltip title="Edit">
+                                <IconButton onClick={() => startEditing(user)} color="primary">
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton onClick={() => deleteUser(user.user_id)} color="error">
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </>
                           )}
-                          <Tooltip title="Delete">
-                            <IconButton onClick={() => deleteUser(user.user_id)} color="error">
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     ))
@@ -225,6 +269,18 @@ const ManageUsers = () => {
             </TableContainer>
           </Paper>
         </Container>
+
+        {/* Snackbar for feedback (top-center) */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

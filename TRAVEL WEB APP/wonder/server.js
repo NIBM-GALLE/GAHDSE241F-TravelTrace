@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'Rash226@',
   database: 'wonder_map',
   port: 3306
 });

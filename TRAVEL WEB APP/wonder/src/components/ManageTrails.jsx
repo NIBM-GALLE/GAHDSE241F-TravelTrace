@@ -64,7 +64,7 @@ const ManageTrails = () => {
     if (window.confirm('Are you sure you want to delete this trail?')) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:8080/api/trails/${trailId}`, {
+        await axios.delete(`http://localhost:3000/api/trails/${trailId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -146,12 +146,12 @@ const ManageTrails = () => {
                         <TableCell>{trail.trail_time}</TableCell>
                         <TableCell>
                           {trail.photo_url && (
-                            <img src={`http://localhost:8080${trail.photo_url}`} alt="Trail Photo" style={{ width: 50, height: 50, objectFit: 'cover' }} />
+                            <img src={`http://localhost:3000${trail.photo_url}`} alt="Trail Photo" style={{ width: 50, height: 50, objectFit: 'cover' }} />
                           )}
                         </TableCell>
                         <TableCell>
                           {trail.video_url && (
-                            <video src={`http://localhost:8080${trail.video_url}`} controls style={{ width: 50, height: 50, objectFit: 'cover' }} />
+                            <video src={`http://localhost:3000${trail.video_url}`} controls style={{ width: 50, height: 50, objectFit: 'cover' }} />
                           )}
                         </TableCell>
                         <TableCell align="right">
