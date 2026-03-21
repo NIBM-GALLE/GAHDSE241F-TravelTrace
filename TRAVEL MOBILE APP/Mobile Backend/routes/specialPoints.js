@@ -1,18 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2');
-
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rash226@',
-  database: 'wonder_map'
-});
 
 // Get all special points
 router.get('/', (req, res) => {
   const query = 'SELECT * FROM special_points';
-  db.query(query, (err, results) => {
+  req.db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error fetching special points' });
     }
@@ -25,7 +17,7 @@ router.get('/trail/:trailId', (req, res) => {
   const trailId = req.params.trailId;
   const query = 'SELECT * FROM special_points WHERE trail_id = ?';
   
-  db.query(query, [trailId], (err, results) => {
+  req.db.query(query, [trailId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error fetching special points' });
     }
@@ -38,7 +30,7 @@ router.get('/:id', (req, res) => {
   const pointId = req.params.id;
   const query = 'SELECT * FROM special_points WHERE point_id = ?';
   
-  db.query(query, [pointId], (err, results) => {
+  req.db.query(query, [pointId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error fetching special point' });
     }
@@ -54,7 +46,7 @@ router.post('/', (req, res) => {
   const { trail_id, name, lat, lng } = req.body;
 
   const query = 'INSERT INTO special_points (trail_id, name, lat, lng) VALUES (?, ?, ?, ?)';
-  db.query(query, [trail_id, name, lat, lng], (err, results) => {
+  req.db.query(query, [trail_id, name, lat, lng], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error creating special point' });
     }
@@ -71,7 +63,7 @@ router.put('/:id', (req, res) => {
   const { name, lat, lng } = req.body;
 
   const query = 'UPDATE special_points SET name = ?, lat = ?, lng = ? WHERE point_id = ?';
-  db.query(query, [name, lat, lng, pointId], (err, results) => {
+  req.db.query(query, [name, lat, lng, pointId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error updating special point' });
     }
@@ -87,7 +79,7 @@ router.delete('/:id', (req, res) => {
   const pointId = req.params.id;
   const query = 'DELETE FROM special_points WHERE point_id = ?';
 
-  db.query(query, [pointId], (err, results) => {
+  req.db.query(query, [pointId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error deleting special point' });
     }

@@ -1,17 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2');
 const multer = require('multer');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../middleware/auth');
-
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rash226@',
-  database: 'wonder_map'
-});
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -79,7 +71,7 @@ router.get('/:id', (req, res) => {
   const trailId = req.params.id;
   const query = 'SELECT * FROM trails WHERE trail_id = ?';
   
-  db.query(query, [trailId], (err, results) => {
+  req.db.query(query, [trailId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error fetching trail' });
     }
@@ -220,7 +212,7 @@ router.put('/:id', (req, res) => {
     WHERE trail_id = ?
   `;
 
-  db.query(
+  req.db.query(
     query,
     [name, category, short_description, start_lat, start_lng,
     end_lat, end_lng, video_url, photo_url, trail_date, trail_time, trailId],
@@ -241,7 +233,7 @@ router.delete('/:id', (req, res) => {
   const trailId = req.params.id;
   const query = 'DELETE FROM trails WHERE trail_id = ?';
 
-  db.query(query, [trailId], (err, results) => {
+  req.db.query(query, [trailId], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error deleting trail' });
     }

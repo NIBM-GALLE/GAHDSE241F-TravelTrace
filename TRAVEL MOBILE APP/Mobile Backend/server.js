@@ -82,12 +82,12 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database Connection
+// Database Connection (from .env only)
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rash226@',
-  database: 'wonder_map'
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'wonder_map'
 });
 
 db.connect((err) => {

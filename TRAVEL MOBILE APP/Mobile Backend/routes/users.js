@@ -3,20 +3,12 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const mysql = require('mysql2');
 const multer = require('multer');
 const path = require('path');
 
 // IMPORTANT: ensure this path matches where your auth middleware lives
 // must export: { verifyToken, JWT_SECRET }
 const { verifyToken, JWT_SECRET } = require('../middleware/auth');
-
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rash226@',
-  database: 'wonder_map'
-});
 
 // Multer for profile uploads
 const storage = multer.diskStorage({
@@ -53,7 +45,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
-    db.query('SELECT user_id FROM users WHERE email = ? OR username = ? LIMIT 1', [email, username], async (dupErr, dupResults) => {
+    req.db.query('SELECT user_id FROM users WHERE email = ? OR username = ? LIMIT 1', [email, username], async (dupErr, dupResults) => {
       if (dupErr) {
         console.error('Error checking duplicates:', dupErr);
         return res.status(500).json({ message: 'Server error' });
@@ -66,7 +58,7 @@ router.post('/register', async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-      db.query(query, [username, email, hashedPassword], (err, results) => {
+      req.db.query(query, [username, email, hashedPassword], (err, results) => {
         if (err) {
           console.error('Error inserting user:', err);
           if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ message: 'Username or email already exists' });
@@ -88,7 +80,7 @@ router.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ message: 'email and password are required' });
 
     const query = 'SELECT * FROM users WHERE email = ?';
-    db.query(query, [email], async (err, results) => {
+    req.db.query(query, [email], async (err, results) => {
       if (err) {
         console.error('Error fetching user during login:', err);
         return res.status(500).json({ message: 'Error logging in' });
@@ -125,7 +117,7 @@ router.get('/profile', verifyToken, (req, res) => {
     if (!userId) return res.status(401).json({ message: 'Invalid token payload' });
 
     const query = 'SELECT user_id, username, email, profile_image_url, bio FROM users WHERE user_id = ?';
-    db.query(query, [userId], (err, results) => {
+    req.db.query(query, [userId], (err, results) => {
       if (err) {
         console.error('Error fetching profile:', err);
         return res.status(500).json({ message: 'Error fetching profile' });
@@ -133,7 +125,7 @@ router.get('/profile', verifyToken, (req, res) => {
       if (results.length === 0) return res.status(404).json({ message: 'User not found' });
 
       const trailsQuery = 'SELECT * FROM trails WHERE user_id = ?';
-      db.query(trailsQuery, [userId], (err2, trails) => {
+      req.db.query(trailsQuery, [userId], (err2, trails) => {
         if (err2) {
           console.error('Error fetching trails:', err2);
           return res.status(500).json({ message: 'Error fetching trails' });
@@ -167,12 +159,12 @@ router.put('/profile', verifyToken, upload.single('profile_image'), (req, res) =
 
     params.push(userId);
     const sql = `UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`;
-    db.query(sql, params, (err, result) => {
+    req.db.query(sql, params, (err, result) => {
       if (err) {
         console.error('Error updating profile:', err);
         return res.status(500).json({ message: 'Error updating profile' });
       }
-      db.query('SELECT user_id, username, email, profile_image_url, bio FROM users WHERE user_id = ?', [userId], (err2, results) => {
+      req.db.query('SELECT user_id, username, email, profile_image_url, bio FROM users WHERE user_id = ?', [userId], (err2, results) => {
         if (err2) {
           console.error('Error fetching updated profile:', err2);
           return res.status(500).json({ message: 'Error fetching updated profile' });
@@ -194,7 +186,7 @@ router.post('/profile/image', verifyToken, upload.single('profile_image'), (req,
     if (!req.file) return res.status(400).json({ message: 'No image file provided' });
 
     const imageUrl = `/uploads/profiles/${req.file.filename}`;
-    db.query('UPDATE users SET profile_image_url = ? WHERE user_id = ?', [imageUrl, userId], (err) => {
+    req.db.query('UPDATE users SET profile_image_url = ? WHERE user_id = ?', [imageUrl, userId], (err) => {
       if (err) {
         console.error('Error updating profile image:', err);
         return res.status(500).json({ message: 'Error updating profile image' });
@@ -222,7 +214,7 @@ router.get('/', verifyToken, (req, res) => {
       params.push(role);
     }
 
-    db.query(query, params, (err, results) => {
+    req.db.query(query, params, (err, results) => {
       if (err) {
         console.error('Error fetching users:', err);
         return res.status(500).json({ message: 'Error fetching users' });
@@ -238,7 +230,7 @@ router.get('/', verifyToken, (req, res) => {
 // Get a user's trails (public)
 router.get('/:id/trails', (req, res) => {
   const userId = req.params.id;
-  db.query('SELECT * FROM trails WHERE user_id = ? ORDER BY created_at DESC', [userId], (err, results) => {
+  req.db.query('SELECT * FROM trails WHERE user_id = ? ORDER BY created_at DESC', [userId], (err, results) => {
     if (err) {
       console.error('Error fetching user trails:', err);
       return res.status(500).json({ message: 'Error fetching user trails' });
@@ -271,7 +263,7 @@ router.put('/:id', verifyToken, (req, res) => {
 
     params.push(targetId);
     const sql = `UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`;
-    db.query(sql, params, (err, result) => {
+    req.db.query(sql, params, (err, result) => {
       if (err) {
         console.error('Error updating user:', err);
         if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ message: 'Username or email already exists' });
@@ -291,7 +283,7 @@ router.delete('/:id', verifyToken, (req, res) => {
     if (req.user?.role !== 'admin') return res.status(403).json({ message: 'Access denied' });
 
     const targetId = req.params.id;
-    db.query('DELETE FROM users WHERE user_id = ?', [targetId], (err, result) => {
+    req.db.query('DELETE FROM users WHERE user_id = ?', [targetId], (err, result) => {
       if (err) {
         console.error('Error deleting user:', err);
         return res.status(500).json({ message: 'Error deleting user' });
