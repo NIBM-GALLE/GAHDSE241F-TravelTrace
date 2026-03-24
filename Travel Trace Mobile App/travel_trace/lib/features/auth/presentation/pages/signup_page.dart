@@ -18,6 +18,12 @@ class _SignupPageState extends State<SignupPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -119,19 +125,18 @@ class _SignupPageState extends State<SignupPage> {
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
+              keyboardType: TextInputType.visiblePassword,
+              autocorrect: false,
+              enableSuggestions: false,
               enabled: !_isLoading,
               decoration: InputDecoration(
                 labelText: 'Password',
                 suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
+                  onPressed: _isLoading ? null : _togglePasswordVisibility,
                   icon: Icon(
                     _obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
                 ),
               ),
