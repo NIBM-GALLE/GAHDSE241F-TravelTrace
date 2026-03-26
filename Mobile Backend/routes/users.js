@@ -37,6 +37,7 @@ const upload = multer({
 
 // Register new user
 router.post('/register', async (req, res) => {
+  console.log('Register request body:', req.body);
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
