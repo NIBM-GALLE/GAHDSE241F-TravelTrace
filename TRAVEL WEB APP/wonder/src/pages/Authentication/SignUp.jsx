@@ -36,7 +36,7 @@ const SignUp = () => {
       });
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred');
+      setError(err.response?.data?.message || err.response?.data?.error || 'An error occurred');
     }
   };
 

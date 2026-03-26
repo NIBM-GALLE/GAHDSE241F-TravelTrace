@@ -45,7 +45,8 @@ const Login = () => {
         navigate('/home');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed');
     }
   };
 

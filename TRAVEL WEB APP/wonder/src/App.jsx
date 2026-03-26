@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material';
-import Login from './components/Login';
-import SignUp from './components/SignUp';
+import Login from './pages/Authentication/Login';
+import SignUp from './pages/Authentication/SignUp';
 import Home from './components/Home';
 import CreateTrail from './components/CreateTrail';
 import Profile from './components/Profile';
