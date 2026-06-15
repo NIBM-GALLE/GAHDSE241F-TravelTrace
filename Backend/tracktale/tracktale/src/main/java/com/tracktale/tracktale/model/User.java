@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String username;
 
     @Column(unique = true, nullable = false, length = 100)
@@ -30,6 +30,12 @@ public class User {
     @JsonIgnore
     @Column(nullable = false)
     private String password;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(length = 255)
+    private String address;
 
     /** Trips are excluded from JSON to prevent infinite recursion and large payloads. */
     @JsonIgnore

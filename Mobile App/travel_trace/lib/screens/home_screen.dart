@@ -1,26 +1,27 @@
 // lib/screens/home_screen.dart
 // -----------------------------------------------------------
 // Dashboard screen — shows all trips for the logged-in user.
-// Provides FAB to create new trips and navigation to MapScreen.
 //
-// For simplicity, a hardcoded demo userId is used. In a real
-// app, replace with the authenticated user's ID from auth state.
+// Auth gate:
+//   • "New Trip" FAB checks if a user is logged in via AuthController.
+//   • Not logged in → shows a bottom-sheet prompting Login or Register.
+//   • Logged in → shows the create-trip dialog using the real user ID.
+//
+// Loads trips for the currently logged-in user once auth state is ready.
 // -----------------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../controllers/auth_controller.dart';
 import '../controllers/trip_controller.dart';
 import '../models/trip_model.dart';
 import '../widgets/trip_card.dart';
+import 'login_screen.dart';
 import 'map_screen.dart';
+import 'register_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
-  // Demo user: user with id=1 in MySQL.
-  // Seed this user first via: POST /api/users
-  // { "username": "demo", "email": "demo@traveltrace.com", "password": "demo123" }
-  static const String demoUserId = '1';
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -30,14 +31,53 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load trips once on first build
+    // Trips are loaded after login — triggered by _onAuthChanged.
+    // If somehow user is already set at startup, load immediately.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TripController>().loadUserTrips(HomeScreen.demoUserId);
+      final auth = context.read<AuthController>();
+      if (auth.isLoggedIn) {
+        context
+            .read<TripController>()
+            .loadUserTrips(auth.currentUser!.id);
+      }
     });
   }
 
+  // ── Auth Gate ───────────────────────────────────────────────
+  /// Called when the user taps "+ New Trip".
+  /// If logged in, show create-trip dialog.
+  /// If not, show the login/register bottom-sheet.
+  Future<void> _onNewTripPressed() async {
+    final auth = context.read<AuthController>();
+    if (auth.isLoggedIn) {
+      await _showCreateTripDialog(auth.currentUser!.id);
+    } else {
+      await _showAuthBottomSheet();
+    }
+  }
+
+  /// Shows a modal bottom-sheet asking the user to log in or register.
+  Future<void> _showAuthBottomSheet() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _AuthBottomSheet(),
+    );
+
+    // After the bottom-sheet closes, if user is now logged in,
+    // reload their trips automatically.
+    if (!mounted) return;
+    final auth = context.read<AuthController>();
+    if (auth.isLoggedIn) {
+      await context
+          .read<TripController>()
+          .loadUserTrips(auth.currentUser!.id);
+    }
+  }
+
   // ── Create Trip Dialog ─────────────────────────────────────
-  Future<void> _showCreateTripDialog() async {
+  Future<void> _showCreateTripDialog(String userId) async {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -77,15 +117,15 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child:
-                Text('Cancel', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+            child: Text('Cancel',
+                style: TextStyle(color: Colors.white.withOpacity(0.5))),
           ),
           ElevatedButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
               Navigator.pop(ctx);
               await context.read<TripController>().createTrip(
-                    userId: HomeScreen.demoUserId,
+                    userId: userId,
                     title: titleController.text.trim(),
                     description: descController.text.trim(),
                   );
@@ -94,8 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: const Color(0xFF6EE7F7),
               foregroundColor: const Color(0xFF0A1628),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Create',
                 style: TextStyle(fontWeight: FontWeight.w700)),
@@ -109,7 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, size: 18, color: Colors.white38),
-      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+      labelStyle:
+          TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
       filled: true,
       fillColor: Colors.white.withOpacity(0.05),
       border: OutlineInputBorder(
@@ -148,6 +188,22 @@ class _HomeScreenState extends State<HomeScreen> {
             floating: false,
             pinned: true,
             backgroundColor: const Color(0xFF0A1628),
+            actions: [
+              // Logout button — only visible when logged in
+              Consumer<AuthController>(
+                builder: (_, auth, __) => auth.isLoggedIn
+                    ? IconButton(
+                        tooltip: 'Logout',
+                        onPressed: () {
+                          auth.logout();
+                          context.read<TripController>().clearTrips();
+                        },
+                        icon: const Icon(Icons.logout_rounded,
+                            color: Colors.white54, size: 22),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               title: Column(
@@ -163,12 +219,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  Consumer<TripController>(
-                    builder: (_, ctrl, __) => Text(
-                      '${ctrl.trips.length} trip${ctrl.trips.length == 1 ? '' : 's'}',
+                  Consumer2<AuthController, TripController>(
+                    builder: (_, auth, ctrl, __) => Text(
+                      auth.isLoggedIn
+                          ? '${ctrl.trips.length} trip${ctrl.trips.length == 1 ? '' : 's'} · ${auth.currentUser!.username}'
+                          : 'Sign in to track your trips',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.45),
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -231,13 +289,56 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton.icon(
-                            onPressed: () => controller
-                                .loadUserTrips(HomeScreen.demoUserId),
+                            onPressed: () {
+                              final auth = context.read<AuthController>();
+                              if (auth.isLoggedIn) {
+                                controller.loadUserTrips(
+                                    auth.currentUser!.id);
+                              }
+                            },
                             icon: const Icon(Icons.refresh_rounded, size: 18),
                             label: const Text('Retry'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6EE7F7),
                               foregroundColor: const Color(0xFF0A1628),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              // ── Not logged in — prompt ─────────────────────
+              if (!context.watch<AuthController>().isLoggedIn) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.lock_outline_rounded,
+                            size: 64,
+                            color: const Color(0xFF6EE7F7).withOpacity(0.25),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Sign in to see your trips',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap + New Trip to get started',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.3),
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -306,8 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
                                 child: const Text('Cancel',
-                                    style:
-                                        TextStyle(color: Colors.white54)),
+                                    style: TextStyle(color: Colors.white54)),
                               ),
                               ElevatedButton(
                                 onPressed: () => Navigator.pop(ctx, true),
@@ -337,12 +437,125 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // ── FAB ────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateTripDialog,
+        onPressed: _onNewTripPressed,
         backgroundColor: const Color(0xFF6EE7F7),
         foregroundColor: const Color(0xFF0A1628),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New Trip',
             style: TextStyle(fontWeight: FontWeight.w700)),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// _AuthBottomSheet
+// Bottom-sheet shown when unauthenticated user taps "New Trip".
+// Prompts them to login or register.
+// ─────────────────────────────────────────────────────────────
+class _AuthBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E2A3A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Icon
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6EE7F7).withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.travel_explore_rounded,
+                color: Color(0xFF6EE7F7), size: 28),
+          ),
+          const SizedBox(height: 18),
+
+          const Text(
+            'Sign in to Create a Trip',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You need an account to save and track your trips.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.45),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Login button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // close sheet
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6EE7F7),
+                foregroundColor: const Color(0xFF0A1628),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              child: const Text('Sign In',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Register button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.pop(context); // close sheet
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF6EE7F7),
+                side: const BorderSide(color: Color(0xFF6EE7F7), width: 1.5),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text('Create Account',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
       ),
     );
   }
