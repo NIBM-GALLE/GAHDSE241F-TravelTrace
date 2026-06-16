@@ -1,6 +1,7 @@
 package com.tracktale.tracktale.controller;
 
 import com.tracktale.tracktale.dto.CreateUserRequest;
+import com.tracktale.tracktale.dto.LoginRequest;
 import com.tracktale.tracktale.model.User;
 import com.tracktale.tracktale.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -10,12 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 /**
- * REST controller for User management under /api/users.
- * Provides endpoints to look up and create users so the Flutter app
- * can register accounts and seed a demo user.
+ * REST controller for User management under /api/users and /api/auth.
+ * Provides endpoints to register, login, and look up users.
  */
 @RestController
-@RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class UserController {
 
@@ -29,7 +28,7 @@ public class UserController {
     // GET /api/users/{id}
     // Fetch a user by primary key
     // -------------------------------------------------------------------------
-    @GetMapping("/{id}")
+    @GetMapping("/api/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return userRepository.findById(id)
                 .map(ResponseEntity::ok)
@@ -39,15 +38,12 @@ public class UserController {
     // -------------------------------------------------------------------------
     // POST /api/users
     // Register / create a new user
-    // Body: { "username": "demo", "email": "demo@example.com", "password": "pass" }
-    // Returns 409 Conflict if username or email already taken.
+    // Body: { "username": "John", "email": "john@example.com", "password": "pass",
+    //         "phoneNumber": "0771234567", "address": "Galle, Sri Lanka" }
+    // Returns 409 Conflict if email already taken.
     // -------------------------------------------------------------------------
-    @PostMapping
+    @PostMapping("/api/users")
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Username already taken: " + request.getUsername());
-        }
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Email already registered: " + request.getEmail());
@@ -58,6 +54,8 @@ public class UserController {
         user.setEmail(request.getEmail());
         // NOTE: In production, hash the password with BCrypt before saving.
         user.setPassword(request.getPassword());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
 
         User saved = userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -65,12 +63,33 @@ public class UserController {
 
     // -------------------------------------------------------------------------
     // GET /api/users/by-username/{username}
-    // Lookup a user by username (useful for login / demo seeding checks)
+    // Lookup a user by username
     // -------------------------------------------------------------------------
-    @GetMapping("/by-username/{username}")
+    @GetMapping("/api/users/by-username/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> user = userRepository.findByUsername(username);
         return user.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /api/auth/login
+    // Authenticate a user by email + password.
+    // Returns 200 + User JSON on success, 401 on bad credentials, 404 if not found.
+    // -------------------------------------------------------------------------
+    @PostMapping("/api/auth/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        Optional<User> optUser = userRepository.findByEmail(request.getEmail());
+        if (optUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No account found with email: " + request.getEmail());
+        }
+        User user = optUser.get();
+        // Plain-text comparison — replace with BCrypt in production
+        if (!user.getPassword().equals(request.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Incorrect password.");
+        }
+        return ResponseEntity.ok(user);
     }
 }

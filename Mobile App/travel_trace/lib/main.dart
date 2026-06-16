@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'controllers/auth_controller.dart';
 import 'controllers/trip_controller.dart';
 import 'screens/home_screen.dart';
 
@@ -36,6 +37,8 @@ class TravelTraceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // AuthController manages login/register state
+        ChangeNotifierProvider(create: (_) => AuthController()),
         // TripController manages all trip data and GPS tracking state
         ChangeNotifierProvider(create: (_) => TripController()),
       ],

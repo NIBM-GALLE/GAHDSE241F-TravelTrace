@@ -5,18 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request payload for creating a new User.
- * Used by the mobile app registration flow.
+ * Request payload for user login.
+ * Used by POST /api/auth/login
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRequest {
+public class LoginRequest {
 
-    private String username;
     private String email;
     private String password;
-    private String phoneNumber;
-    private String address;
 }
-

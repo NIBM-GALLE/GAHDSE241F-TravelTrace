@@ -27,7 +27,7 @@ class ApiService {
   // ── Base URL ──────────────────────────────────────────────
   // Android emulator → 10.0.2.2 maps to host localhost
   // Physical device  → use your LAN IP (e.g. 192.168.x.x)
-  static const String baseUrl = 'http://10.0.2.2:5000/api';
+  static const String baseUrl = 'http://192.168.43.62:5000/api';
 
   /// Shared JSON headers
   static const Map<String, String> _headers = {
@@ -50,11 +50,14 @@ class ApiService {
   }
 
   // ── POST /api/users ───────────────────────────────────────
-  /// Create a new user. Returns the created user map.
-  Future<Map<String, dynamic>> createUser({
+  /// Register a new user account.
+  /// Returns the created user map (id, username, email, phoneNumber, address).
+  Future<Map<String, dynamic>> registerUser({
     required String username,
     required String email,
     required String password,
+    required String phoneNumber,
+    required String address,
   }) async {
     final uri = Uri.parse('$baseUrl/users');
     final response = await http
@@ -65,10 +68,31 @@ class ApiService {
             'username': username,
             'email': email,
             'password': password,
+            'phoneNumber': phoneNumber,
+            'address': address,
           }),
         )
         .timeout(const Duration(seconds: 15));
-    _assertSuccess(response, 'createUser');
+    _assertSuccess(response, 'registerUser');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  // ── POST /api/auth/login ──────────────────────────────────
+  /// Authenticate a user by email + password.
+  /// Returns the user map on success, throws ApiException on failure.
+  Future<Map<String, dynamic>> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$baseUrl/auth/login');
+    final response = await http
+        .post(
+          uri,
+          headers: _headers,
+          body: jsonEncode({'email': email, 'password': password}),
+        )
+        .timeout(const Duration(seconds: 15));
+    _assertSuccess(response, 'loginUser');
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -101,8 +125,7 @@ class ApiService {
       _assertSuccess(response, 'fetchUserTrips');
 
       // Spring Boot returns a plain JSON array: [{...}, {...}]
-      final List<dynamic> data =
-          jsonDecode(response.body) as List<dynamic>;
+      final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
       return data
           .map<TripModel>((j) => TripModel.fromJson(j as Map<String, dynamic>))
           .toList();
@@ -126,7 +149,8 @@ class ApiService {
 
     _assertSuccess(response, 'getTripById');
     return TripModel.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>);
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   // ── POST /api/trips ───────────────────────────────────────
@@ -144,7 +168,7 @@ class ApiService {
           uri,
           headers: _headers,
           body: jsonEncode({
-            'userId': int.parse(userId),   // backend expects Long
+            'userId': int.parse(userId), // backend expects Long
             'title': title,
             'description': description,
             'status': 'PLANNED',
@@ -154,7 +178,8 @@ class ApiService {
 
     _assertSuccess(response, 'createTrip');
     return TripModel.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>);
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   // ── DELETE /api/trips/{id} ────────────────────────────────
@@ -212,7 +237,8 @@ class ApiService {
 
     _assertSuccess(response, 'addWaypoint');
     return TripModel.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>);
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   // ── PATCH /api/trips/{id}/status ─────────────────────────
@@ -233,7 +259,8 @@ class ApiService {
 
     _assertSuccess(response, 'updateTripStatus');
     return TripModel.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>);
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   // ─── Private Helpers ────────────────────────────────────────
@@ -251,7 +278,10 @@ class ApiService {
       } catch (_) {
         message = response.body.isNotEmpty ? response.body : message;
       }
-      throw ApiException('[$operation] $message', statusCode: response.statusCode);
+      throw ApiException(
+        '[$operation] $message',
+        statusCode: response.statusCode,
+      );
     }
   }
 }

@@ -216,6 +216,18 @@ class TripController extends ChangeNotifier {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // clearTrips
+  // Resets all trip state — called on logout.
+  // ═══════════════════════════════════════════════════════════
+  void clearTrips() {
+    _trips = [];
+    _activeTrip = null;
+    _loadingState = LoadingState.idle;
+    _errorMessage = '';
+    notifyListeners();
+  }
+
   // ─── Private Helpers ────────────────────────────────────────
 
   /// Sends a single [lat, lng] coordinate to the backend.
