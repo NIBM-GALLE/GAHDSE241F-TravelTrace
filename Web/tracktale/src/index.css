@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+/* Leaflet map overrides — ensure map fills its container correctly */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  background: #1e293b;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default margins */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #020617;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for the sidebar */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 2px;
+}
