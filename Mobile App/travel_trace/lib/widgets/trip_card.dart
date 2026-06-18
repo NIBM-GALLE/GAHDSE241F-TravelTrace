@@ -177,7 +177,7 @@ class TripCard extends StatelessWidget {
   }
 
   Color _statusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'ongoing':
         return const Color(0xFF34D399); // Emerald green
       case 'completed':

@@ -20,7 +20,7 @@ import 'dart:convert';
 
 /// A single waypoint pin — parsed from the waypointsData JSON string.
 class WaypointModel {
-  final String id;     // synthetic index-based id (no DB id stored in JSON string)
+  final String id; // synthetic index-based id (no DB id stored in JSON string)
   final String name;
   final String note;
   final String photoUrl;
@@ -48,7 +48,7 @@ class WaypointModel {
       note: json['note'] as String? ?? '',
       photoUrl: (json['imageUrl'] ?? json['photoUrl'] ?? '') as String,
       longitude: _toDouble(json['lng'] ?? json['longitude'] ?? 0),
-      latitude:  _toDouble(json['lat'] ?? json['latitude']  ?? 0),
+      latitude: _toDouble(json['lat'] ?? json['latitude'] ?? 0),
       createdAt: json['timestamp'] != null
           ? DateTime.tryParse(json['timestamp'] as String) ?? DateTime.now()
           : DateTime.now(),
@@ -77,11 +77,11 @@ class WaypointModel {
 /// Represents a full trip with route coords and waypoints,
 /// mapped from a Spring Boot Trip entity response.
 class TripModel {
-  final String id;           // Long from backend, stored as String in Dart
-  final String userId;       // Long from backend user.id
+  final String id; // Long from backend, stored as String in Dart
+  final String userId; // Long from backend user.id
   final String title;
   final String description;
-  final String status;       // 'PLANNED' | 'ONGOING' | 'COMPLETED'
+  final String status; // 'PLANNED' | 'ONGOING' | 'COMPLETED'
   final List<List<double>> routeCoordinates; // [[lng, lat], ...]
   final List<WaypointModel> waypoints;
   final String coverPhotoUrl;
@@ -111,10 +111,12 @@ class TripModel {
       try {
         final decoded = jsonDecode(rawRoute) as List<dynamic>;
         routeCoords = decoded
-            .map<List<double>>((pair) => [
-                  _toDouble((pair as List<dynamic>)[0]),
-                  _toDouble(pair[1]),
-                ])
+            .map<List<double>>(
+              (pair) => [
+                _toDouble((pair as List<dynamic>)[0]),
+                _toDouble(pair[1]),
+              ],
+            )
             .toList();
       } catch (_) {
         routeCoords = [];
@@ -125,16 +127,20 @@ class TripModel {
     // waypointsData is stored as a JSON string: "[{...},{...}]"
     List<WaypointModel> waypoints = [];
     final rawWaypoints = json['waypointsData'] as String?;
-    if (rawWaypoints != null && rawWaypoints.isNotEmpty && rawWaypoints != '[]') {
+    if (rawWaypoints != null &&
+        rawWaypoints.isNotEmpty &&
+        rawWaypoints != '[]') {
       try {
         final decoded = jsonDecode(rawWaypoints) as List<dynamic>;
         waypoints = decoded
             .asMap()
             .entries
-            .map((e) => WaypointModel.fromJson(
-                  e.value as Map<String, dynamic>,
-                  id: e.key.toString(),
-                ))
+            .map(
+              (e) => WaypointModel.fromJson(
+                e.value as Map<String, dynamic>,
+                id: e.key.toString(),
+              ),
+            )
             .toList();
       } catch (_) {
         waypoints = [];
@@ -143,9 +149,7 @@ class TripModel {
 
     // ── User id ────────────────────────────────────────────────
     final userObj = json['user'] as Map<String, dynamic>?;
-    final userId = userObj != null
-        ? (userObj['id'] ?? 0).toString()
-        : '0';
+    final userId = userObj != null ? (userObj['id'] ?? 0).toString() : '0';
 
     return TripModel(
       id: (json['id'] ?? 0).toString(),
@@ -156,7 +160,8 @@ class TripModel {
       routeCoordinates: routeCoords,
       waypoints: waypoints,
       coverPhotoUrl: '',
-      createdAt: DateTime.now(),  // Spring Boot entity has no createdAt field yet
+      createdAt:
+          DateTime.now(), // Spring Boot entity has no createdAt field yet
       updatedAt: DateTime.now(),
     );
   }
