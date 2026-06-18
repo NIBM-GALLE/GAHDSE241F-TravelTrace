@@ -29,9 +29,9 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
 
-  // Default center: world view. Will zoom to route if data exists.
-  static const LatLng _defaultCenter = LatLng(20.0, 0.0);
-  static const double _defaultZoom = 3.0;
+  // Default center: Sri Lanka geographic center. Will zoom to route if data exists.
+  static const LatLng _defaultCenter = LatLng(7.8731, 80.7718);
+  static const double _defaultZoom = 7.5;
   static const double _trackingZoom = 15.0;
 
   /// Selected waypoint for the popup panel
