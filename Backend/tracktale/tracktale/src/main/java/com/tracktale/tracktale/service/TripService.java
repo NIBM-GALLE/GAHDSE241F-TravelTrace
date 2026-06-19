@@ -79,4 +79,11 @@ public interface TripService {
      * @return the updated Trip entity
      */
     Trip updateStatus(Long tripId, TripStatus status);
+
+    /**
+     * Retrieve all trips from all users — used by the public web Explore page.
+     *
+     * @return list of all Trip entities ordered by creation date descending
+     */
+    List<Trip> getAllTrips();
 }

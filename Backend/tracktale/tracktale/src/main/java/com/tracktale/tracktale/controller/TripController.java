@@ -52,6 +52,16 @@ public class TripController {
     }
 
     // -------------------------------------------------------------------------
+    // GET /api/trips/all
+    // Retrieve ALL trips from ALL users — used by the public web Explore page
+    // -------------------------------------------------------------------------
+    @GetMapping("/all")
+    public ResponseEntity<List<Trip>> getAllTrips() {
+        List<Trip> trips = tripService.getAllTrips();
+        return ResponseEntity.ok(trips);
+    }
+
+    // -------------------------------------------------------------------------
     // GET /api/trips/{id}
     // Retrieve a single trip by ID
     // -------------------------------------------------------------------------

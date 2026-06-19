@@ -2,25 +2,27 @@
 // -----------------------------------------------------------
 // Dart data classes mirroring the Spring Boot / MySQL Trip entity.
 //
-// Spring Boot response shape (plain entity — no wrapper):
+// Spring Boot response shape:
 // {
 //   "id": 1,
-//   "title": "Bali Escape",
+//   "title": "Ella Hike",
 //   "description": "...",
-//   "status": "PLANNED",
-//   "routeData": "[[103.82,1.35],[103.83,1.36]]",   // JSON string
-//   "waypointsData": "[{\"lat\":1.35,\"lng\":103.82,\"note\":\"Hotel\"}]",
-//   "user": { "id": 1, "username": "demo", "email": "..." }
+//   "status": "COMPLETED",
+//   "province": "Uva Province",
+//   "duration": "2 days",
+//   "tags": "Hiking,Scenic",
+//   "createdAt": "2024-04-02T06:00:00",
+//   "routeData": "[[80.77,7.87],[80.78,7.88]]",
+//   "waypointsData": "[{\"lat\":7.87,\"lng\":80.77,\"name\":\"...\"}]",
+//   "user": { "id": 1, "username": "priya", "email": "..." }
 // }
-//
-// Coordinate order stored in routeData: [longitude, latitude]
 // -----------------------------------------------------------
 
 import 'dart:convert';
 
 /// A single waypoint pin — parsed from the waypointsData JSON string.
 class WaypointModel {
-  final String id; // synthetic index-based id (no DB id stored in JSON string)
+  final String id; // synthetic index-based id
   final String name;
   final String note;
   final String photoUrl;
@@ -38,9 +40,6 @@ class WaypointModel {
     required this.createdAt,
   });
 
-  /// Parse a waypoint from a flat JSON object stored inside waypointsData.
-  /// Expected shape: { "lat": 1.35, "lng": 103.82, "note": "...",
-  ///                   "name": "...", "imageUrl": "...", "timestamp": "..." }
   factory WaypointModel.fromJson(Map<String, dynamic> json, {String id = ''}) {
     return WaypointModel(
       id: id,
@@ -55,7 +54,6 @@ class WaypointModel {
     );
   }
 
-  /// Serialize for sending to PUT /api/trips/{id}/waypoint as waypointJson.
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -74,14 +72,17 @@ class WaypointModel {
 
 // ─────────────────────────────────────────────────────────────
 
-/// Represents a full trip with route coords and waypoints,
-/// mapped from a Spring Boot Trip entity response.
+/// Represents a full trip with route coords, waypoints, and metadata.
 class TripModel {
-  final String id; // Long from backend, stored as String in Dart
-  final String userId; // Long from backend user.id
+  final String id;
+  final String userId;
+  final String username; // from user.username
   final String title;
   final String description;
   final String status; // 'PLANNED' | 'ONGOING' | 'COMPLETED'
+  final String province; // e.g. "Uva Province"
+  final String duration; // e.g. "2 days"
+  final List<String> tags; // e.g. ["Hiking", "Scenic"]
   final List<List<double>> routeCoordinates; // [[lng, lat], ...]
   final List<WaypointModel> waypoints;
   final String coverPhotoUrl;
@@ -91,9 +92,13 @@ class TripModel {
   const TripModel({
     required this.id,
     required this.userId,
+    required this.username,
     required this.title,
     required this.description,
     required this.status,
+    required this.province,
+    required this.duration,
+    required this.tags,
     required this.routeCoordinates,
     required this.waypoints,
     required this.coverPhotoUrl,
@@ -104,7 +109,6 @@ class TripModel {
   /// Parse a TripModel from a Spring Boot entity JSON response.
   factory TripModel.fromJson(Map<String, dynamic> json) {
     // ── Route coordinates ──────────────────────────────────────
-    // routeData is stored as a JSON string: "[[lng,lat],[lng,lat]]"
     List<List<double>> routeCoords = [];
     final rawRoute = json['routeData'] as String?;
     if (rawRoute != null && rawRoute.isNotEmpty && rawRoute != '[]') {
@@ -124,7 +128,6 @@ class TripModel {
     }
 
     // ── Waypoints ──────────────────────────────────────────────
-    // waypointsData is stored as a JSON string: "[{...},{...}]"
     List<WaypointModel> waypoints = [];
     final rawWaypoints = json['waypointsData'] as String?;
     if (rawWaypoints != null &&
@@ -147,21 +150,37 @@ class TripModel {
       }
     }
 
-    // ── User id ────────────────────────────────────────────────
+    // ── Tags — stored as comma-separated string ────────────────
+    final rawTags = json['tags'] as String? ?? '';
+    final tags = rawTags.isNotEmpty
+        ? rawTags.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList()
+        : <String>[];
+
+    // ── User ───────────────────────────────────────────────────
     final userObj = json['user'] as Map<String, dynamic>?;
     final userId = userObj != null ? (userObj['id'] ?? 0).toString() : '0';
+    final username = userObj != null ? (userObj['username'] ?? '') as String : '';
+
+    // ── createdAt ──────────────────────────────────────────────
+    final rawCreatedAt = json['createdAt'] as String?;
+    final createdAt = rawCreatedAt != null
+        ? DateTime.tryParse(rawCreatedAt) ?? DateTime.now()
+        : DateTime.now();
 
     return TripModel(
       id: (json['id'] ?? 0).toString(),
       userId: userId,
+      username: username,
       title: json['title'] as String? ?? 'Untitled Trip',
       description: json['description'] as String? ?? '',
       status: json['status'] as String? ?? 'PLANNED',
+      province: json['province'] as String? ?? '',
+      duration: json['duration'] as String? ?? '',
+      tags: tags,
       routeCoordinates: routeCoords,
       waypoints: waypoints,
       coverPhotoUrl: '',
-      createdAt:
-          DateTime.now(), // Spring Boot entity has no createdAt field yet
+      createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
   }
@@ -173,16 +192,22 @@ class TripModel {
       'title': title,
       'description': description,
       'status': status,
+      'province': province,
+      'duration': duration,
+      'tags': tags.join(','),
     };
   }
 
-  /// Returns a copy of this TripModel with given fields overridden.
   TripModel copyWith({
     String? id,
     String? userId,
+    String? username,
     String? title,
     String? description,
     String? status,
+    String? province,
+    String? duration,
+    List<String>? tags,
     List<List<double>>? routeCoordinates,
     List<WaypointModel>? waypoints,
     String? coverPhotoUrl,
@@ -192,9 +217,13 @@ class TripModel {
     return TripModel(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      username: username ?? this.username,
       title: title ?? this.title,
       description: description ?? this.description,
       status: status ?? this.status,
+      province: province ?? this.province,
+      duration: duration ?? this.duration,
+      tags: tags ?? this.tags,
       routeCoordinates: routeCoordinates ?? this.routeCoordinates,
       waypoints: waypoints ?? this.waypoints,
       coverPhotoUrl: coverPhotoUrl ?? this.coverPhotoUrl,
@@ -203,12 +232,11 @@ class TripModel {
     );
   }
 
-  /// Convenience: total number of GPS points in the route
   int get totalTrackPoints => routeCoordinates.length;
 
   @override
   String toString() =>
-      'TripModel(id: $id, title: $title, status: $status, waypoints: ${waypoints.length})';
+      'TripModel(id: $id, title: $title, status: $status, province: $province, duration: $duration, tags: $tags, waypoints: ${waypoints.length})';
 }
 
 // ─────────────────────────────────────────────────────────────

@@ -29,18 +29,35 @@ public class Trip {
 
     /**
      * Serialized JSON array of [lng, lat] coordinate pairs representing the travel route.
-     * Example: [[103.8198, 1.3521], [103.8300, 1.3600]]
+     * Example: [[80.7718, 7.8731], [80.7800, 7.8900]]
      */
     @Column(columnDefinition = "LONGTEXT")
     private String routeData;
 
     /**
      * Serialized JSON array of waypoint pin objects.
-     * Each object may contain: { lat, lng, note, imageUrl, timestamp }
-     * Example: [{"lat":1.35,"lng":103.82,"note":"Hotel","imageUrl":"https://..."}]
+     * Each object: { lat, lng, note, name, imageUrl, timestamp }
      */
     @Column(columnDefinition = "LONGTEXT")
     private String waypointsData;
+
+    /**
+     * Province where the trail takes place (e.g. "Uva Province").
+     */
+    @Column(length = 100)
+    private String province;
+
+    /**
+     * User-entered duration string (e.g. "2 days", "Half day").
+     */
+    @Column(length = 50)
+    private String duration;
+
+    /**
+     * Comma-separated category tags (e.g. "Hiking,Scenic,Culture").
+     */
+    @Column(columnDefinition = "TEXT")
+    private String tags;
 
     /**
      * The owning user — serialized as a nested object but strips the

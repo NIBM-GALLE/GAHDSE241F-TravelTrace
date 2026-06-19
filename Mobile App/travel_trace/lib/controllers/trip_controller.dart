@@ -67,6 +67,9 @@ class TripController extends ChangeNotifier {
     required String userId,
     required String title,
     String description = '',
+    String province = '',
+    String duration = '',
+    List<String> tags = const [],
   }) async {
     _setLoading();
     try {
@@ -74,6 +77,9 @@ class TripController extends ChangeNotifier {
         userId: userId,
         title: title,
         description: description,
+        province: province,
+        duration: duration,
+        tags: tags,
       );
       _trips.insert(0, newTrip);
       _setSuccess();

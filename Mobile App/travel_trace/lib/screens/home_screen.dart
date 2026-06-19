@@ -96,70 +96,325 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ── Create Trip Dialog ─────────────────────────────────────
+  // ── Create Trip Bottom Sheet ───────────────────────────────
   Future<void> _showCreateTripDialog(String userId) async {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    await showDialog(
+    String? selectedProvince;
+    String? selectedDuration;
+    final Set<String> selectedTags = {};
+
+    const provinces = [
+      'Western Province',
+      'Central Province',
+      'Southern Province',
+      'Northern Province',
+      'Eastern Province',
+      'North Western Province',
+      'North Central Province',
+      'Uva Province',
+      'Sabaragamuwa Province',
+    ];
+
+    const durations = [
+      'Half day',
+      '1 day',
+      '2 days',
+      '3 days',
+      '4–5 days',
+      '1 week',
+      '1+ week',
+    ];
+
+    const allTags = [
+      'Hiking',
+      'Scenic',
+      'Culture',
+      'Heritage',
+      'Coastal',
+      'Wildlife',
+      'City',
+      'Adventure',
+      'Photography',
+      'National Park',
+      'Trekking',
+      'Tea Country',
+      'Ocean',
+    ];
+
+    await showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E2A3A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'New Trip',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: titleController,
-                style: const TextStyle(color: Colors.white),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Title required' : null,
-                decoration: _inputDecoration('Trip Title', Icons.map_rounded),
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: descController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 2,
-                decoration: _inputDecoration(
-                    'Description (optional)', Icons.notes_rounded),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel',
-                style: TextStyle(color: Colors.white.withOpacity(0.5))),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              Navigator.pop(ctx);
-              await context.read<TripController>().createTrip(
-                    userId: userId,
-                    title: titleController.text.trim(),
-                    description: descController.text.trim(),
-                  );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6EE7F7),
-              foregroundColor: const Color(0xFF0A1628),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => DraggableScrollableSheet(
+          initialChildSize: 0.92,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F1E2E),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
-            child: const Text('Create',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Column(
+              children: [
+                // ── Handle bar ──────────────────────────────
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 4),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // ── Header ──────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.add_location_alt_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Create New Trip',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: const Icon(Icons.close_rounded,
+                            color: Colors.white38, size: 22),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white10, height: 20),
+                // ── Scrollable Form ──────────────────────────
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title
+                          _sectionLabel('Trip Title *'),
+                          TextFormField(
+                            controller: titleController,
+                            style: const TextStyle(color: Colors.white),
+                            validator: (v) =>
+                                v == null || v.trim().isEmpty ? 'Title is required' : null,
+                            decoration: _inputDecoration(
+                                'e.g. Ella Sunrise Hike', Icons.map_rounded),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Description
+                          _sectionLabel('Description'),
+                          TextFormField(
+                            controller: descController,
+                            style: const TextStyle(color: Colors.white),
+                            maxLines: 3,
+                            decoration: _inputDecoration(
+                                'Tell us about this trip...', Icons.notes_rounded),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Province
+                          _sectionLabel('Province'),
+                          DropdownButtonFormField<String>(
+                            value: selectedProvince,
+                            dropdownColor: const Color(0xFF1E2A3A),
+                            style: const TextStyle(color: Colors.white),
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                color: Colors.white38),
+                            decoration: _inputDecoration(
+                                'Select province', Icons.location_on_rounded),
+                            items: provinces
+                                .map((p) => DropdownMenuItem(
+                                      value: p,
+                                      child: Text(p,
+                                          style: const TextStyle(
+                                              color: Colors.white, fontSize: 14)),
+                                    ))
+                                .toList(),
+                            onChanged: (val) =>
+                                setModalState(() => selectedProvince = val),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Duration
+                          _sectionLabel('Estimated Duration'),
+                          DropdownButtonFormField<String>(
+                            value: selectedDuration,
+                            dropdownColor: const Color(0xFF1E2A3A),
+                            style: const TextStyle(color: Colors.white),
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                                color: Colors.white38),
+                            decoration: _inputDecoration(
+                                'How long?', Icons.schedule_rounded),
+                            items: durations
+                                .map((d) => DropdownMenuItem(
+                                      value: d,
+                                      child: Text(d,
+                                          style: const TextStyle(
+                                              color: Colors.white, fontSize: 14)),
+                                    ))
+                                .toList(),
+                            onChanged: (val) =>
+                                setModalState(() => selectedDuration = val),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Tags
+                          _sectionLabel('Trail Categories'),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Select all that apply',
+                            style: TextStyle(
+                                color: Colors.white.withOpacity(0.35),
+                                fontSize: 11),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: allTags.map((tag) {
+                              final isSelected = selectedTags.contains(tag);
+                              return GestureDetector(
+                                onTap: () => setModalState(() {
+                                  if (isSelected) {
+                                    selectedTags.remove(tag);
+                                  } else {
+                                    selectedTags.add(tag);
+                                  }
+                                }),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFF6EE7F7).withOpacity(0.15)
+                                        : Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? const Color(0xFF6EE7F7)
+                                          : Colors.white.withOpacity(0.1),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? const Color(0xFF6EE7F7)
+                                          : Colors.white60,
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 28),
+
+                          // Create button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (!formKey.currentState!.validate()) return;
+                                Navigator.pop(ctx);
+                                await context.read<TripController>().createTrip(
+                                      userId: userId,
+                                      title: titleController.text.trim(),
+                                      description: descController.text.trim(),
+                                      province: selectedProvince ?? '',
+                                      duration: selectedDuration ?? '',
+                                      tags: selectedTags.toList(),
+                                    );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                              ).copyWith(
+                                backgroundColor: WidgetStateProperty.all(
+                                    Colors.transparent),
+                                overlayColor: WidgetStateProperty.all(
+                                    Colors.white.withOpacity(0.08)),
+                              ),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.symmetric(vertical: 15),
+                                  child: const Text(
+                                    'Create Trip',
+                                    style: TextStyle(
+                                      color: Color(0xFF0A1628),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }

@@ -10,10 +10,13 @@ import java.util.List;
 public interface TripRepository extends JpaRepository<Trip, Long> {
 
     /**
-     * Fetch all trips belonging to a specific user.
-     *
-     * @param userId the primary key of the owning User
-     * @return list of Trip entities for that user
+     * Fetch all trips belonging to a specific user, newest first.
      */
-    List<Trip> findByUserId(Long userId);
+    List<Trip> findByUserIdOrderByIdDesc(Long userId);
+
+    /**
+     * Fetch all trips from all users — newest first (by auto-increment ID).
+     * Used by the public web Explore page.
+     */
+    List<Trip> findAllByOrderByIdDesc();
 }

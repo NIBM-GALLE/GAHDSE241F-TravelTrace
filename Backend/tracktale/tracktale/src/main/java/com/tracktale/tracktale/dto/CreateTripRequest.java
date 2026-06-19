@@ -19,4 +19,13 @@ public class CreateTripRequest {
 
     /** The owning user's ID. */
     private Long userId;
+
+    /** Province where the trail is located (e.g. "Uva Province"). */
+    private String province;
+
+    /** User-entered duration (e.g. "2 days", "Half day"). */
+    private String duration;
+
+    /** Comma-separated tags (e.g. "Hiking,Scenic,Culture"). */
+    private String tags;
 }
