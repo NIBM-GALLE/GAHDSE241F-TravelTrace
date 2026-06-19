@@ -40,6 +40,9 @@ public class TripServiceImpl implements TripService {
         trip.setStatus(request.getStatus() != null ? request.getStatus() : TripStatus.PLANNED);
         trip.setRouteData("[]");
         trip.setWaypointsData("[]");
+        trip.setProvince(request.getProvince() != null ? request.getProvince() : "");
+        trip.setDuration(request.getDuration() != null ? request.getDuration() : "");
+        trip.setTags(request.getTags() != null ? request.getTags() : "");
         trip.setUser(user);
 
         return tripRepository.save(trip);
@@ -55,7 +58,7 @@ public class TripServiceImpl implements TripService {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("User not found with id: " + userId);
         }
-        return tripRepository.findByUserId(userId);
+        return tripRepository.findByUserIdOrderByIdDesc(userId);
     }
 
     @Override
@@ -140,6 +143,16 @@ public class TripServiceImpl implements TripService {
         Trip trip = findTripOrThrow(tripId);
         trip.setStatus(status);
         return tripRepository.save(trip);
+    }
+
+    // -------------------------------------------------------------------------
+    // Get All Trips — public Explore page
+    // -------------------------------------------------------------------------
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Trip> getAllTrips() {
+        return tripRepository.findAllByOrderByIdDesc();
     }
 
     // -------------------------------------------------------------------------

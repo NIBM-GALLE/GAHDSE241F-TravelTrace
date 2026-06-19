@@ -155,11 +155,13 @@ class ApiService {
 
   // ── POST /api/trips ───────────────────────────────────────
   /// Create a new trip.
-  /// Body: { "userId": 1, "title": "...", "description": "...", "status": "PLANNED" }
   Future<TripModel> createTrip({
     required String userId,
     required String title,
     String description = '',
+    String province = '',
+    String duration = '',
+    List<String> tags = const [],
   }) async {
     final uri = Uri.parse('$baseUrl/trips');
 
@@ -168,10 +170,13 @@ class ApiService {
           uri,
           headers: _headers,
           body: jsonEncode({
-            'userId': int.parse(userId), // backend expects Long
+            'userId': int.parse(userId),
             'title': title,
             'description': description,
             'status': 'PLANNED',
+            'province': province,
+            'duration': duration,
+            'tags': tags.join(','), // stored as comma-separated string
           }),
         )
         .timeout(const Duration(seconds: 15));
