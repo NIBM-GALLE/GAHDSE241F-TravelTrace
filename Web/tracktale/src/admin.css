@@ -1,0 +1,90 @@
+/* ──────────────────────────────────────────────────────────── */
+/* Admin-specific styles                                       */
+/* ──────────────────────────────────────────────────────────── */
+
+/* Shake animation — login error feedback */
+@keyframes admin-shake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-8px); }
+  30%      { transform: translateX(6px); }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(3px); }
+  75%      { transform: translateX(-2px); }
+}
+.admin-shake {
+  animation: admin-shake 0.5s ease-in-out;
+}
+
+/* Fade-in */
+@keyframes admin-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.admin-fade-in {
+  animation: admin-fade-in 0.4s ease-out both;
+}
+
+/* Slide-in from left (sidebar) */
+@keyframes admin-slide-in {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.admin-slide-in {
+  animation: admin-slide-in 0.35s ease-out both;
+}
+
+/* Staggered card animation */
+.admin-stagger-1 { animation-delay: 0.05s; }
+.admin-stagger-2 { animation-delay: 0.10s; }
+.admin-stagger-3 { animation-delay: 0.15s; }
+.admin-stagger-4 { animation-delay: 0.20s; }
+
+/* Modal backdrop */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(6px);
+  animation: admin-fade-in 0.2s ease-out;
+}
+
+/* Modal panel */
+@keyframes admin-modal-pop {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.admin-modal-panel {
+  animation: admin-modal-pop 0.25s ease-out both;
+}
+
+/* Pulse glow for ongoing status */
+@keyframes admin-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+  50%      { box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.15); }
+}
+.admin-pulse-glow {
+  animation: admin-pulse-glow 2s ease-in-out infinite;
+}
+
+/* Admin scrollbar */
+.admin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+.admin-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.admin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+.admin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
