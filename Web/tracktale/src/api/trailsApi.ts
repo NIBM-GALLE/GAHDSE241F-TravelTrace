@@ -5,7 +5,7 @@
 // ──────────────────────────────────────────────────────────────
 
 // Backend base URL — reads from Vite env var, falls back to local
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.43.62:5000/api';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.1.4:5000/api';
 
 // ── TypeScript interfaces matching Spring Boot entity ─────────
 
