@@ -450,42 +450,37 @@ export default function ManageTrails() {
           </div>
         )}
       </div>
-    </div>
-      </div >
 
-    {/* ── Delete modal ── */ }
-  {
-    deleteTarget && (
-      <DeleteModal
-        trail={deleteTarget}
-        onConfirm={handleDelete}
-        onCancel={() => { if (!deleting) setDeleteTarget(null); }}
-        deleting={deleting}
-      />
-    )
-  }
+      {/* ── Delete modal ── */}
+      {deleteTarget && (
+        <DeleteModal
+          trail={deleteTarget}
+          onConfirm={handleDelete}
+          onCancel={() => { if (!deleting) setDeleteTarget(null); }}
+          deleting={deleting}
+        />
+      )}
 
-  {/* ── Toast notification ── */ }
-  {
-    toast && (
-      <div className="fixed bottom-6 right-6 z-[110] admin-fade-in">
-        <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-xl ${toast.startsWith('Error')
-            ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-          }`}>
-          {toast.startsWith('Error') ? (
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          )}
-          <p className="text-sm font-medium">{toast}</p>
+      {/* ── Toast notification ── */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[110] admin-fade-in">
+          <div className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border backdrop-blur-xl ${toast.startsWith('Error')
+              ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+            }`}>
+            {toast.startsWith('Error') ? (
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <p className="text-sm font-medium">{toast}</p>
+          </div>
         </div>
-      </div>
-    )
-  }
+      )}
+    </div>
   );
 }
