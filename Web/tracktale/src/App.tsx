@@ -9,7 +9,12 @@ import TrailDetail from './pages/TrailDetail';
 import About from './pages/About';
 import Support from './pages/Support';
 import AdminLogin from './pages/AdminLogin';
-import AdminDashboard from './pages/AdminDashboard';
+import AdminLayout from './pages/AdminPanel/AdminLayout';
+import Dashboard from './pages/AdminPanel/pages/Dashboard';
+import UserManagement from './pages/AdminPanel/pages/UserManagement';
+import ActivityLogs from './pages/AdminPanel/pages/ActivityLogs';
+import ManageTrails from './pages/AdminPanel/pages/ManageTrails';
+import Settings from './pages/AdminPanel/pages/Settings';
 
 // ── Protected route for admin dashboard ──────────────────────
 function RequireAdmin({ children }: { children: React.ReactNode }) {
@@ -37,9 +42,14 @@ function AppLayout() {
 
           {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={
-            <RequireAdmin><AdminDashboard /></RequireAdmin>
-          } />
+          <Route path="/admin/dashboard" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+            <Route index element={<Dashboard />} />
+            <Route path="trails" element={<ManageTrails />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="activity-logs" element={<ActivityLogs />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
         </Routes>
       </main>
       {/* Don't show footer on trail detail (full-screen map) or admin routes */}

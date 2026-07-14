@@ -1,6 +1,9 @@
 /* ──────────────────────────────────────────────────────────── */
-/* Admin-specific styles                                       */
+/* Admin-specific styles — Light Corporate Theme               */
+/* Design System: Inter font, #2563EB primary, #F9FAFB bg     */
 /* ──────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* Shake animation — login error feedback */
 @keyframes admin-shake {
@@ -39,7 +42,7 @@
 .admin-stagger-3 { animation-delay: 0.15s; }
 .admin-stagger-4 { animation-delay: 0.20s; }
 
-/* Modal backdrop */
+/* Modal backdrop — light theme */
 .admin-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -47,7 +50,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 6, 23, 0.8);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(6px);
   animation: admin-fade-in 0.2s ease-out;
 }
@@ -63,17 +66,17 @@
 
 /* Pulse glow for ongoing status */
 @keyframes admin-pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
-  50%      { box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3); }
+  50%      { box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.15); }
 }
 .admin-pulse-glow {
   animation: admin-pulse-glow 2s ease-in-out infinite;
 }
 
-/* Admin scrollbar */
+/* Admin scrollbar — light theme */
 .admin-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 .admin-scroll::-webkit-scrollbar {
   width: 5px;
@@ -82,9 +85,25 @@
   background: transparent;
 }
 .admin-scroll::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 .admin-scroll::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #94a3b8;
+}
+
+/* Design system elevation */
+.admin-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+}
+
+.admin-card-hover:hover {
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.08), 0px 2px 4px rgba(0,0,0,0.04);
+}
+
+.admin-dropdown {
+  box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05);
 }
