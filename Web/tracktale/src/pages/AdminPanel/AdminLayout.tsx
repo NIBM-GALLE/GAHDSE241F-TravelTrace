@@ -21,15 +21,15 @@ const navSections = [
     items: [
       { name: 'User Management', path: '/admin/dashboard/users', icon: Users },
       { name: 'Trip Management', path: '/admin/dashboard/trails', icon: Map },
-      { name: 'Location Tracking', path: '#location-tracking', icon: MapPin },
-      { name: 'Destinations', path: '#destinations', icon: Compass },
-      { name: 'Categories', path: '#categories', icon: Tags },
+      { name: 'Location Tracking', path: '/admin/dashboard/location-tracking', icon: MapPin },
+      { name: 'Destinations', path: '/admin/dashboard/destinations', icon: Compass },
+      { name: 'Categories', path: '/admin/dashboard/categories', icon: Tags },
     ],
   },
   {
     label: 'INTELLIGENCE',
     items: [
-      { name: 'Reports & Analytics', path: '#reports', icon: BarChart3 },
+      { name: 'Reports & Analytics', path: '/admin/dashboard/reports', icon: BarChart3 },
       { name: 'Activity Logs', path: '/admin/dashboard/activity-logs', icon: Activity },
     ],
   },
@@ -37,15 +37,15 @@ const navSections = [
     label: 'COMMUNICATION',
     items: [
       { name: 'Notifications', path: '#notifications', icon: Bell },
-      { name: 'Feedback', path: '#feedback', icon: MessageSquare },
-      { name: 'Support Center', path: '#support', icon: LifeBuoy },
+      { name: 'Feedback', path: '/admin/dashboard/feedback', icon: MessageSquare },
+      { name: 'Support Center', path: '/admin/dashboard/support', icon: LifeBuoy },
     ],
   },
   {
     label: 'SYSTEM',
     items: [
-      { name: 'Admin Management', path: '#admin-mgmt', icon: ShieldCheck },
-      { name: 'Roles & Permissions', path: '#roles', icon: UserCog },
+      { name: 'Admin Management', path: '/admin/dashboard/admin-management', icon: ShieldCheck },
+      { name: 'Roles & Permissions', path: '/admin/dashboard/roles', icon: UserCog },
       { name: 'Settings', path: '/admin/dashboard/settings', icon: Settings },
       { name: 'Profile', path: '#profile', icon: User },
     ],
