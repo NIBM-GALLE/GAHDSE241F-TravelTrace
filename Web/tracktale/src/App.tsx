@@ -23,6 +23,8 @@ import LocationTracking from './pages/AdminPanel/pages/LocationTracking';
 import Destinations from './pages/AdminPanel/pages/Destinations';
 import Categories from './pages/AdminPanel/pages/Categories';
 import Feedback from './pages/AdminPanel/pages/Feedback';
+import Profile from './pages/AdminPanel/pages/Profile';
+import Notifications from './pages/AdminPanel/pages/Notifications';
 
 // ── Protected route for admin dashboard ──────────────────────
 function RequireAdmin({ children }: { children: React.ReactNode }) {
@@ -64,6 +66,8 @@ function AppLayout() {
             <Route path="destinations" element={<Destinations />} />
             <Route path="categories" element={<Categories />} />
             <Route path="feedback" element={<Feedback />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Routes>

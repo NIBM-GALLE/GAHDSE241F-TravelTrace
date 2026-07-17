@@ -36,7 +36,7 @@ const navSections = [
   {
     label: 'COMMUNICATION',
     items: [
-      { name: 'Notifications', path: '#notifications', icon: Bell },
+      { name: 'Notifications', path: '/admin/dashboard/notifications', icon: Bell },
       { name: 'Feedback', path: '/admin/dashboard/feedback', icon: MessageSquare },
       { name: 'Support Center', path: '/admin/dashboard/support', icon: LifeBuoy },
     ],
@@ -47,7 +47,7 @@ const navSections = [
       { name: 'Admin Management', path: '/admin/dashboard/admin-management', icon: ShieldCheck },
       { name: 'Roles & Permissions', path: '/admin/dashboard/roles', icon: UserCog },
       { name: 'Settings', path: '/admin/dashboard/settings', icon: Settings },
-      { name: 'Profile', path: '#profile', icon: User },
+      { name: 'Profile', path: '/admin/dashboard/profile', icon: User },
     ],
   },
 ];
@@ -135,7 +135,7 @@ export default function AdminLayout() {
                       end={item.path === '/admin/dashboard'}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all ${
                         isActive
-                          ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
+                          ? 'text-blue-600 font-bold'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                       }`}
                       onClick={() => setSidebarOpen(false)}
