@@ -202,12 +202,24 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-slate-950 pt-16">
       {/* Header */}
-      <div className="bg-slate-900/80 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
+      <div className="relative overflow-hidden border-b border-slate-800 bg-slate-900/80">
+        <div className="absolute inset-0">
+          <video
+            className="h-full w-full object-cover opacity-25"
+            src="/explore.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+          <div className="absolute inset-0 bg-slate-950/70" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="max-w-4xl mx-auto text-center">
             <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">Community</span>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white mt-2 mb-3">Explore Sri Lankan Trails</h1>
-            <p className="text-slate-400 max-w-xl mx-auto text-sm">
+            <p className="text-slate-300 max-w-xl mx-auto text-sm">
               Discover journeys created by travellers exploring the beauty of Sri Lanka.
             </p>
           </div>
@@ -223,7 +235,7 @@ export default function Explore() {
                 placeholder="Search trails, users, provinces..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-slate-800/85 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
           </div>

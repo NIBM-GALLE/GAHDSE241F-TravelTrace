@@ -16,18 +16,45 @@ export default function About() {
   return (
     <div className="min-h-screen bg-slate-950 pt-16 text-white">
       {/* Hero */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">About TravelTrace</span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold mt-3 mb-5 leading-tight">
-            Built for Sri Lanka's{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-              Explorers
-            </span>
-          </h1>
-          <p className="text-slate-400 text-lg leading-relaxed max-w-2xl mx-auto">
-            TravelTrace was born from a simple idea: every journey across Sri Lanka's breathtaking landscapes deserves to be remembered, shared, and celebrated. We built the tools to make that effortless.
-          </p>
+      <section className="relative overflow-hidden border-b border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 py-20 px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0">
+          <video
+            className="h-full w-full object-cover opacity-35"
+            src="/about.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+          <div className="absolute inset-0 bg-slate-950/70" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="text-center lg:text-left">
+            <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">About TravelTrace</span>
+            <h1 className="text-4xl sm:text-5xl font-extrabold mt-3 mb-5 leading-tight">
+              Built for Sri Lanka's{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                Explorers
+              </span>
+            </h1>
+            <p className="text-slate-300 text-lg leading-relaxed max-w-2xl lg:max-w-xl">
+              TravelTrace was born from a simple idea: every journey across Sri Lanka's breathtaking landscapes deserves to be remembered, shared, and celebrated. We built the tools to make that effortless.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-400/20 bg-slate-900/50 p-3 shadow-2xl shadow-emerald-500/10 backdrop-blur-sm">
+            <div className="overflow-hidden rounded-2xl border border-slate-800">
+              <video
+                className="h-[260px] w-full object-cover sm:h-[320px]"
+                src="/about.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            </div>
+          </div>
         </div>
       </section>
 
