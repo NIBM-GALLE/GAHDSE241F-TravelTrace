@@ -27,7 +27,7 @@ class ApiService {
   // ── Base URL ──────────────────────────────────────────────
   // Android emulator → 10.0.2.2 maps to host localhost
   // Physical device  → use your LAN IP (e.g. 192.168.x.x)
-  static const String baseUrl = 'http://192.168.1.4:5000/api';
+  static const String baseUrl = 'http://192.168.43.62:5000/api';
 
   /// Shared JSON headers
   static const Map<String, String> _headers = {

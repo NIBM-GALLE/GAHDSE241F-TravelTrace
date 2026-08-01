@@ -10,13 +10,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/trip_controller.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env variables (Cloudinary credentials, API URL, etc.)
+  await dotenv.load(fileName: '.env');
 
   // Force the status bar to be transparent for the immersive dark UI
   SystemChrome.setSystemUIOverlayStyle(
