@@ -372,31 +372,50 @@ export default function ManageTrails() {
       const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+      const recipientEmail = trail.userEmail || 'user@example.com';
+      const recipientName = trail.username || 'Traveler';
+
       if (serviceId && templateId && publicKey) {
         try {
+          const dateStr = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
           await emailjs.send(
             serviceId,
             templateId,
             {
-              user_name: trail.username,
-              user_email: trail.userEmail || 'user@example.com',
+              // Support all common variable naming conventions in EmailJS templates
+              user_name: recipientName,
+              name: recipientName,
+              to_name: recipientName,
+
+              user_email: recipientEmail,
+              email: recipientEmail,
+              to_email: recipientEmail,
+
               trail_title: trail.title,
-              approval_date: new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              }),
+              title: trail.title,
+
+              approval_date: dateStr,
+              date: dateStr,
+              time: dateStr,
+
               explore_url: `${window.location.origin}/explore`,
+              message: `Thank you for sharing your travel experience with TravelTrace! Your trail "${trail.title}" has been successfully approved and published on TravelTrace.`,
             },
             publicKey
           );
-          showToast(`"${trail.title}" approved! Confirmation email sent to user.`);
-        } catch (emailErr) {
+          showToast(`"${trail.title}" approved! Email sent to ${recipientEmail}`);
+        } catch (emailErr: any) {
           console.error('EmailJS error:', emailErr);
-          showToast(`"${trail.title}" approved! (Email notification failed to send)`);
+          const detail = emailErr?.text || emailErr?.message || 'Check EmailJS keys & template setting';
+          showToast(`"${trail.title}" approved! (EmailJS: ${detail})`);
         }
       } else {
-        showToast(`"${trail.title}" approved successfully!`);
+        showToast(`"${trail.title}" approved! (Warning: VITE_EMAILJS_* env variables missing in .env)`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Approval failed';
