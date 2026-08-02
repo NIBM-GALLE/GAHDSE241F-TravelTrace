@@ -37,8 +37,18 @@ public class User {
     @Column(length = 255)
     private String address;
 
+    /** Cloudinary URL of the user's profile picture. */
+    @Column(length = 500)
+    private String profileImageUrl;
+
+    /** Account status — ACTIVE or SUSPENDED. Defaults to ACTIVE for new registrations. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus status = UserStatus.ACTIVE;
+
     /** Trips are excluded from JSON to prevent infinite recursion and large payloads. */
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Trip> trips = new ArrayList<>();
 }
+

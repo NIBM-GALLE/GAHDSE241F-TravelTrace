@@ -268,6 +268,27 @@ class ApiService {
     );
   }
 
+  // ── PATCH /api/users/{id}/profile-image ─────────────────────
+  /// Update the user's profile image URL (Cloudinary URL).
+  /// Returns the updated user map.
+  Future<Map<String, dynamic>> updateProfileImage({
+    required String userId,
+    required String profileImageUrl,
+  }) async {
+    final uri = Uri.parse('$baseUrl/users/$userId/profile-image');
+
+    final response = await http
+        .patch(
+          uri,
+          headers: _headers,
+          body: jsonEncode({'profileImageUrl': profileImageUrl}),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    _assertSuccess(response, 'updateProfileImage');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   // ─── Private Helpers ────────────────────────────────────────
 
   void _assertSuccess(http.Response response, String operation) {

@@ -10,7 +10,9 @@
 // Loads trips for the currently logged-in user once auth state is ready.
 // -----------------------------------------------------------
 
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/trip_controller.dart';
@@ -811,6 +813,106 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Profile Image Picker ──────────────────────────────────
+  Future<void> _pickAndUploadProfileImage(AuthController auth) async {
+    if (auth.isUploadingProfileImage) return;
+
+    final picker = ImagePicker();
+
+    // Show source picker bottom sheet
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E2A3A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Change Profile Photo',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6EE7F7).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.camera_alt_rounded,
+                    color: Color(0xFF6EE7F7), size: 22),
+              ),
+              title: const Text('Take Photo',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              subtitle: Text('Use your camera',
+                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            const Divider(color: Colors.white10, height: 8),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFA78BFA).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.photo_library_rounded,
+                    color: Color(0xFFA78BFA), size: 22),
+              ),
+              title: const Text('Choose from Gallery',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              subtitle: Text('Pick an existing photo',
+                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    final picked = await picker.pickImage(source: source, maxWidth: 800, maxHeight: 800, imageQuality: 85);
+    if (picked == null || !mounted) return;
+
+    final imageFile = File(picked.path);
+    final success = await auth.updateProfileImage(imageFile);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success
+              ? 'Profile photo updated!'
+              : 'Failed to update profile photo'),
+          backgroundColor: success ? const Color(0xFF22C55E) : Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
   // ── User Account View Content ──────────────────────────────
   Widget _buildAccountContent() {
     final auth = context.watch<AuthController>();
@@ -890,34 +992,102 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Column(
                           children: [
-                            // Beautiful Initials Circle
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF6EE7F7).withOpacity(0.3),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
+                            // Profile Avatar with Change Photo Overlay
+                            GestureDetector(
+                              onTap: () => _pickAndUploadProfileImage(auth),
+                              child: Stack(
+                                children: [
+                                  // Avatar — show profile image or initials
+                                  auth.currentUser!.profileImageUrl.isNotEmpty
+                                      ? Container(
+                                          width: 88,
+                                          height: 88,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(0xFF6EE7F7).withOpacity(0.5),
+                                              width: 3,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF6EE7F7).withOpacity(0.3),
+                                                blurRadius: 15,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                            image: DecorationImage(
+                                              image: NetworkImage(auth.currentUser!.profileImageUrl),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 88,
+                                          height: 88,
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF6EE7F7).withOpacity(0.3),
+                                                blurRadius: 15,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              auth.currentUser!.username.substring(0, 2).toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Color(0xFF0A1628),
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                  // Camera icon overlay
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF6EE7F7),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF1E2A3A),
+                                          width: 2.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF6EE7F7).withOpacity(0.4),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: auth.isUploadingProfileImage
+                                          ? const Padding(
+                                              padding: EdgeInsets.all(6),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xFF0A1628),
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.camera_alt_rounded,
+                                              size: 15,
+                                              color: Color(0xFF0A1628),
+                                            ),
+                                    ),
                                   ),
                                 ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  auth.currentUser!.username.substring(0, 2).toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Color(0xFF0A1628),
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
                               ),
                             ),
                             const SizedBox(height: 16),

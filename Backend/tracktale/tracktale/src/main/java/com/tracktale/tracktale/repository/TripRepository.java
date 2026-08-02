@@ -1,6 +1,7 @@
 package com.tracktale.tracktale.repository;
 
 import com.tracktale.tracktale.model.Trip;
+import com.tracktale.tracktale.model.TripStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,11 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
      * Used by the public web Explore page.
      */
     List<Trip> findAllByOrderByIdDesc();
+
+    /** Count all trips for a user — used by admin dashboard stats. */
+    long countByUserId(Long userId);
+
+    /** Count trips by user and status — used by admin dashboard stats. */
+    long countByUserIdAndStatus(Long userId, TripStatus status);
 }
+
