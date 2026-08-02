@@ -1,7 +1,7 @@
 // src/pages/Explore.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchAllTrails, type Trail } from '../api/trailsApi';
+import { fetchApprovedTrails, type Trail } from '../api/trailsApi';
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   COMPLETED: { bg: 'bg-cyan-400/10', text: 'text-cyan-400', dot: 'bg-cyan-400' },
@@ -169,12 +169,12 @@ export default function Explore() {
   const [activeTag, setActiveTag] = useState('All Tags');
   const [search, setSearch] = useState('');
 
-  // Load from real backend
+  // Load from real backend — only approved trails
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchAllTrails()
+    fetchApprovedTrails()
       .then(data => { if (!cancelled) { setTrails(data); setLoading(false); } })
       .catch(err => { if (!cancelled) { setError(err.message); setLoading(false); } });
     return () => { cancelled = true; };
@@ -301,7 +301,7 @@ export default function Explore() {
             <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">{error}</p>
             <p className="text-slate-600 text-xs mt-2">Make sure the Spring Boot backend is running and reachable.</p>
             <button
-              onClick={() => { setLoading(true); setError(null); fetchAllTrails().then(setTrails).catch(e => setError(e.message)).finally(() => setLoading(false)); }}
+              onClick={() => { setLoading(true); setError(null); fetchApprovedTrails().then(setTrails).catch(e => setError(e.message)).finally(() => setLoading(false)); }}
               className="mt-4 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors"
             >
               Retry

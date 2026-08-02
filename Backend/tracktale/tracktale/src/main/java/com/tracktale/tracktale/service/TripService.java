@@ -86,4 +86,27 @@ public interface TripService {
      * @return list of all Trip entities ordered by creation date descending
      */
     List<Trip> getAllTrips();
+
+    /**
+     * Retrieve only published AND approved trips — for public web Explore page.
+     *
+     * @return list of approved Trip entities
+     */
+    List<Trip> getApprovedTrips();
+
+    /**
+     * Mark a completed trip as "published" (submitted for admin review).
+     *
+     * @param tripId the primary key of the Trip
+     * @return the updated Trip entity
+     */
+    Trip publishTrip(Long tripId);
+
+    /**
+     * Admin approves a published trip for public display.
+     *
+     * @param tripId the primary key of the Trip
+     * @return the updated Trip entity
+     */
+    Trip approveTrip(Long tripId);
 }

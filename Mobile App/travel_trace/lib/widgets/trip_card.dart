@@ -13,12 +13,14 @@ class TripCard extends StatelessWidget {
   final TripModel trip;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
+  final VoidCallback? onPublish;
 
   const TripCard({
     super.key,
     required this.trip,
     required this.onTap,
     this.onDelete,
+    this.onPublish,
   });
 
   @override
@@ -94,6 +96,62 @@ class TripCard extends StatelessWidget {
                       ),
                     ),
 
+                    // Approval / Review Status Badge
+                    if (trip.approved) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: const Color(0xFF22C55E).withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.check_circle_rounded,
+                                color: Color(0xFF22C55E), size: 12),
+                            SizedBox(width: 4),
+                            Text(
+                              'APPROVED',
+                              style: TextStyle(
+                                color: Color(0xFF22C55E),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (trip.published) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.hourglass_top_rounded,
+                                color: Colors.amber, size: 12),
+                            SizedBox(width: 4),
+                            Text(
+                              'UNDER REVIEW',
+                              style: TextStyle(
+                                color: Colors.amber,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     const Spacer(),
 
                     // Delete button
@@ -144,7 +202,7 @@ class TripCard extends StatelessWidget {
 
               // ── Stats Row ─────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                 child: Row(
                   children: [
                     _StatChip(
@@ -169,6 +227,38 @@ class TripCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // ── Publish Action Button (Only for Completed & Not Published) ──
+              if (trip.status.toUpperCase() == 'COMPLETED' &&
+                  !trip.published &&
+                  onPublish != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: onPublish,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 4,
+                      ),
+                      icon: const Icon(Icons.cloud_upload_rounded, size: 18),
+                      label: const Text(
+                        'Publish Trail to Website',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

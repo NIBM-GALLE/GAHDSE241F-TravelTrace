@@ -36,6 +36,8 @@ export interface BackendTrip {
   tags: string | null;        // comma-separated e.g. "Hiking,Scenic"
   routeData: string | null;   // JSON string "[[lng,lat],[lng,lat]]"
   waypointsData: string | null; // JSON string "[{...},{...}]"
+  published?: boolean;
+  approved?: boolean;
   user: BackendUser;
 }
 
@@ -44,6 +46,7 @@ export interface Trail {
   id: string;
   title: string;
   username: string;
+  userEmail: string;
   userAvatar: string;        // 2-letter initials
   description: string;
   status: 'PLANNED' | 'ONGOING' | 'COMPLETED';
@@ -55,6 +58,8 @@ export interface Trail {
   coverImage: string;
   createdAt: string;         // "YYYY-MM-DD"
   tags: string[];
+  published: boolean;
+  approved: boolean;
 }
 
 // ── Parsers ───────────────────────────────────────────────────
@@ -119,6 +124,7 @@ export function mapBackendTrip(trip: BackendTrip): Trail {
     id: String(trip.id),
     title: trip.title,
     username: trip.user.username,
+    userEmail: trip.user.email ?? '',
     userAvatar: avatarInitials(trip.user.username),
     description: trip.description ?? '',
     status: trip.status,
@@ -130,6 +136,8 @@ export function mapBackendTrip(trip: BackendTrip): Trail {
     coverImage: '',
     createdAt: `#${trip.id}`,   // No timestamp in DB yet — show trip number
     tags,
+    published: trip.published ?? false,
+    approved: trip.approved ?? false,
   };
 }
 
@@ -139,6 +147,14 @@ export function mapBackendTrip(trip: BackendTrip): Trail {
 export async function fetchAllTrails(): Promise<Trail[]> {
   const res = await fetch(`${BASE_URL}/trips/all`);
   if (!res.ok) throw new Error(`Failed to fetch trails: ${res.status}`);
+  const data: BackendTrip[] = await res.json();
+  return data.map(mapBackendTrip);
+}
+
+/** Fetch only approved trails (GET /api/trips/approved) */
+export async function fetchApprovedTrails(): Promise<Trail[]> {
+  const res = await fetch(`${BASE_URL}/trips/approved`);
+  if (!res.ok) throw new Error(`Failed to fetch approved trails: ${res.status}`);
   const data: BackendTrip[] = await res.json();
   return data.map(mapBackendTrip);
 }

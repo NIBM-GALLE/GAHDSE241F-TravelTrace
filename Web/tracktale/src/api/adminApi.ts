@@ -15,6 +15,12 @@ export async function deleteTrail(id: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to delete trail ${id}: ${res.status}`);
 }
 
+/** Approve a trail by ID (PATCH /api/trips/{id}/approve) */
+export async function approveTrail(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/trips/${id}/approve`, { method: 'PATCH' });
+  if (!res.ok) throw new Error(`Failed to approve trail ${id}: ${res.status}`);
+}
+
 // ── User Management ──────────────────────────────────────────
 
 /** Shape returned by GET /api/users/all */

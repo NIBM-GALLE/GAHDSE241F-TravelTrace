@@ -229,6 +229,23 @@ class TripController extends ChangeNotifier {
   }
 
   // ═══════════════════════════════════════════════════════════
+  // publishTrip
+  // Submits a completed trip for admin review.
+  // ═══════════════════════════════════════════════════════════
+  Future<bool> publishTrip(String tripId) async {
+    try {
+      final updated = await _api.publishTrip(tripId);
+      _updateTripInList(updated);
+      if (_activeTrip?.id == tripId) _activeTrip = updated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // clearTrips
   // Resets all trip state — called on logout.
   // ═══════════════════════════════════════════════════════════

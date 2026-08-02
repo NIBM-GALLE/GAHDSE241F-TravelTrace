@@ -799,6 +799,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller.deleteTrip(trip.id);
                       }
                     },
+                    onPublish: () async {
+                      final success = await controller.publishTrip(trip.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(success
+                                ? 'Trail submitted for admin review!'
+                                : 'Failed to publish trail'),
+                            backgroundColor: success
+                                ? const Color(0xFF2563EB)
+                                : Colors.redAccent,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            margin: const EdgeInsets.all(16),
+                          ),
+                        );
+                      }
+                    },
                   );
                 },
                 childCount: filteredTrips.length,

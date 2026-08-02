@@ -268,6 +268,21 @@ class ApiService {
     );
   }
 
+  // ── PATCH /api/trips/{id}/publish ──────────────────────────
+  /// Submit a completed trip for admin review.
+  Future<TripModel> publishTrip(String tripId) async {
+    final uri = Uri.parse('$baseUrl/trips/$tripId/publish');
+
+    final response = await http
+        .patch(uri, headers: _headers)
+        .timeout(const Duration(seconds: 15));
+
+    _assertSuccess(response, 'publishTrip');
+    return TripModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   // ── PATCH /api/users/{id}/profile-image ─────────────────────
   /// Update the user's profile image URL (Cloudinary URL).
   /// Returns the updated user map.

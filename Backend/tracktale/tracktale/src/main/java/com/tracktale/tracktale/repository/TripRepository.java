@@ -26,5 +26,10 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     /** Count trips by user and status — used by admin dashboard stats. */
     long countByUserIdAndStatus(Long userId, TripStatus status);
+
+    /**
+     * Fetch only published AND approved trails — for public web Explore page.
+     */
+    List<Trip> findAllByPublishedTrueAndApprovedTrueOrderByIdDesc();
 }
 
