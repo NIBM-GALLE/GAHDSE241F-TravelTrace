@@ -29,6 +29,8 @@ export default function TrailDetail() {
   const [error, setError] = useState<string | null>(null);
   const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
   const [hoveredWaypoint, setHoveredWaypoint] = useState<Waypoint | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -243,9 +245,22 @@ export default function TrailDetail() {
                 <p className="text-slate-400 text-xs leading-relaxed mb-3">{activeWaypoint.note}</p>
 
                 {/* Waypoint photo or placeholder */}
-                {activeWaypoint.imageUrl ? (
-                  <div className="w-full h-28 rounded-xl overflow-hidden mb-2">
-                    <img src={activeWaypoint.imageUrl} alt={activeWaypoint.name} className="w-full h-full object-cover" />
+                {activeWaypoint.imageUrl && !brokenImages.has(activeWaypoint.imageUrl) ? (
+                  <div
+                    className="w-full h-36 rounded-xl overflow-hidden mb-2 cursor-pointer group relative"
+                    onClick={() => setLightboxUrl(activeWaypoint.imageUrl)}
+                  >
+                    <img
+                      src={activeWaypoint.imageUrl}
+                      alt={activeWaypoint.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={() => setBrokenImages(prev => new Set(prev).add(activeWaypoint.imageUrl))}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-28 rounded-xl bg-slate-800 flex items-center justify-center mb-2">
@@ -306,8 +321,18 @@ export default function TrailDetail() {
                           <span className="text-slate-600 text-xs flex-shrink-0">#{i + 1}</span>
                         </div>
                         <p className="text-slate-400 text-xs mt-0.5 line-clamp-2">{wp.note}</p>
-                        {wp.imageUrl && (
-                          <p className="text-emerald-400 text-xs mt-1">📸 Photo attached</p>
+                        {wp.imageUrl && !brokenImages.has(wp.imageUrl) && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="w-4 h-4 rounded overflow-hidden flex-shrink-0">
+                              <img
+                                src={wp.imageUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={() => setBrokenImages(prev => new Set(prev).add(wp.imageUrl))}
+                              />
+                            </div>
+                            <p className="text-emerald-400 text-xs">📸 Photo</p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -348,9 +373,66 @@ export default function TrailDetail() {
                   </div>
                 ))}
               </div>
+
+              {/* ── Trail Photos Gallery ──────────────────────────── */}
+              {(() => {
+                const photosWithWp = trail.waypoints
+                  .filter(wp => wp.imageUrl && !brokenImages.has(wp.imageUrl));
+                if (photosWithWp.length === 0) return null;
+                return (
+                  <div className="mt-6 pt-4 border-t border-slate-800">
+                    <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                      📸 Trail Photos ({photosWithWp.length})
+                    </h2>
+                    <div className="grid grid-cols-2 gap-2">
+                      {photosWithWp.map((wp) => (
+                        <div
+                          key={`photo-${wp.id}`}
+                          className="relative rounded-lg overflow-hidden cursor-pointer group aspect-square"
+                          onClick={() => setLightboxUrl(wp.imageUrl)}
+                        >
+                          <img
+                            src={wp.imageUrl}
+                            alt={wp.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            onError={() => setBrokenImages(prev => new Set(prev).add(wp.imageUrl))}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            <p className="text-white text-xs font-semibold truncate">{wp.name}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
+
+      {/* ── Lightbox modal ─────────────────────────────────────── */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Full size photo"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       </div>
     </div>
   );

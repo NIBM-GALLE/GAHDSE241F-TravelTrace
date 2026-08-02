@@ -114,16 +114,22 @@ class TripController extends ChangeNotifier {
 
     try {
       // Backend stores waypoints as a JSON string — send flat lat/lng keys
+      debugPrint('[TripController] 📤 addWaypoint called:');
+      debugPrint('[TripController]    name=$name, note=$note');
+      debugPrint('[TripController]    photoUrl="$photoUrl"');
+      debugPrint('[TripController]    lat=$latitude, lng=$longitude');
+      final waypointData = {
+        'name': name,
+        'note': note,
+        'imageUrl': photoUrl,    // backend uses imageUrl key
+        'lat': latitude,         // backend uses lat/lng keys
+        'lng': longitude,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      debugPrint('[TripController]    waypointData: $waypointData');
       final updatedTrip = await _api.addWaypoint(
         tripId: _activeTrip!.id,
-        waypointData: {
-          'name': name,
-          'note': note,
-          'imageUrl': photoUrl,    // backend uses imageUrl key
-          'lat': latitude,         // backend uses lat/lng keys
-          'lng': longitude,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        waypointData: waypointData,
       );
 
       // Use the fresh TripModel returned by the backend

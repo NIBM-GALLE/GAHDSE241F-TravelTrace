@@ -70,6 +70,13 @@ function parseRouteCoordinates(routeData: string | null): [number, number][] {
   }
 }
 
+/** Only treat a string as a valid image URL if it starts with http(s):// */
+function toImageUrl(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+}
+
 function parseWaypoints(waypointsData: string | null): Waypoint[] {
   if (!waypointsData || waypointsData === '[]') return [];
   try {
@@ -78,7 +85,7 @@ function parseWaypoints(waypointsData: string | null): Waypoint[] {
       id: String(i),
       name: (w.name as string) ?? 'Waypoint',
       note: (w.note as string) ?? '',
-      imageUrl: ((w.imageUrl ?? w.photoUrl) as string) ?? '',
+      imageUrl: toImageUrl(w.imageUrl ?? w.photoUrl ?? w.photo),
       lat: Number(w.lat ?? w.latitude ?? 0),
       lng: Number(w.lng ?? w.longitude ?? 0),
       timestamp: (w.timestamp as string) ?? new Date().toISOString(),

@@ -10,6 +10,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,7 +36,14 @@ class CloudinaryService {
   /// Uploads an image [file] to Cloudinary and returns the
   /// secure CDN URL on success, or throws an exception on failure.
   Future<String> uploadImage(File file) async {
+    debugPrint('[CloudinaryService] ── uploadImage START ──');
+    debugPrint('[CloudinaryService]    cloudName: "$_cloudName"');
+    debugPrint('[CloudinaryService]    preset: "$_uploadPreset"');
+    debugPrint('[CloudinaryService]    uploadUrl: "$_uploadUrl"');
+    debugPrint('[CloudinaryService]    file: ${file.path}');
+
     if (_cloudName.isEmpty) {
+      debugPrint('[CloudinaryService] ❌ CLOUDINARY_CLOUD_NAME is empty!');
       throw CloudinaryException(
         'CLOUDINARY_CLOUD_NAME not found in .env file.',
       );
@@ -55,15 +63,18 @@ class CloudinaryService {
       // Optional: organize uploads in a folder
       request.fields['folder'] = 'travel_trace/waypoints';
 
+      debugPrint('[CloudinaryService] 🔄 Sending request...');
       final streamedResponse = await request.send().timeout(
         const Duration(seconds: 30),
       );
 
       final response = await http.Response.fromStream(streamedResponse);
+      debugPrint('[CloudinaryService]    Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final secureUrl = body['secure_url'] as String?;
+        debugPrint('[CloudinaryService] ✅ secure_url: $secureUrl');
         if (secureUrl == null || secureUrl.isEmpty) {
           throw CloudinaryException(
             'Upload succeeded but no secure_url returned.',
@@ -73,6 +84,7 @@ class CloudinaryService {
       } else {
         // Try to extract Cloudinary error message
         String errorMsg = 'HTTP ${response.statusCode}';
+        debugPrint('[CloudinaryService] ❌ Response body: ${response.body}');
         try {
           final body = jsonDecode(response.body) as Map<String, dynamic>;
           final error = body['error'] as Map<String, dynamic>?;
@@ -81,6 +93,7 @@ class CloudinaryService {
         throw CloudinaryException('Upload failed: $errorMsg');
       }
     } on SocketException {
+      debugPrint('[CloudinaryService] ❌ SocketException - no network');
       throw CloudinaryException(
         'Network error — check your internet connection.',
       );

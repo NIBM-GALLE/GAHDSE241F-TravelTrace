@@ -92,15 +92,22 @@ class _WaypointDialogContentState extends State<_WaypointDialogContent> {
   // ── Upload to Cloudinary ──────────────────────────────────
   Future<void> _uploadToCloudinary(File file) async {
     setState(() => _isUploading = true);
+    debugPrint('[WaypointDialog] 🔄 Starting Cloudinary upload...');
+    debugPrint('[WaypointDialog]    File: ${file.path}');
+    debugPrint('[WaypointDialog]    File exists: ${file.existsSync()}');
+    debugPrint('[WaypointDialog]    File size: ${file.lengthSync()} bytes');
     try {
       final url = await CloudinaryService().uploadImage(file);
+      debugPrint('[WaypointDialog] ✅ Upload SUCCESS! URL: $url');
       if (mounted) {
         setState(() {
           _uploadedPhotoUrl = url;
           _isUploading = false;
         });
+        debugPrint('[WaypointDialog]    _uploadedPhotoUrl set to: $_uploadedPhotoUrl');
       }
     } catch (e) {
+      debugPrint('[WaypointDialog] ❌ Upload FAILED: $e');
       if (mounted) {
         setState(() => _isUploading = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -287,6 +294,13 @@ class _WaypointDialogContentState extends State<_WaypointDialogContent> {
     }
 
     setState(() => _isSubmitting = true);
+
+    debugPrint('[WaypointDialog] 📤 SUBMITTING WAYPOINT...');
+    debugPrint('[WaypointDialog]    name: ${_nameController.text.trim()}');
+    debugPrint('[WaypointDialog]    note: ${_noteController.text.trim()}');
+    debugPrint('[WaypointDialog]    _uploadedPhotoUrl: $_uploadedPhotoUrl');
+    debugPrint('[WaypointDialog]    photoUrl being sent: ${_uploadedPhotoUrl ?? ""}');
+    debugPrint('[WaypointDialog]    lat: $_capturedLat, lng: $_capturedLng');
 
     final controller = context.read<TripController>();
     final success = await controller.addWaypoint(
