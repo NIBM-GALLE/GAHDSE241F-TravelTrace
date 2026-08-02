@@ -1,9 +1,9 @@
 // src/pages/About.tsx
 export default function About() {
   const team = [
-    { initials: 'CS', name: 'Chaminda Silva', role: 'Full Stack Developer', desc: 'Built the Spring Boot backend, MySQL schema, and REST APIs. Passionate about clean architecture.' },
-    { initials: 'PJ', name: 'Priya Jayawardena', role: 'Flutter Developer', desc: 'Crafted the mobile app UI/UX, GPS tracking logic, and Cloudinary image integration.' },
-    { initials: 'NP', name: 'Nuwan Perera', role: 'UI/UX Designer', desc: 'Designed the TravelTrace brand identity, user flows, and the overall visual design system.' },
+    { initials: 'TK', name: 'Thalikoralage Nethmi', role: 'Full Stack Developer' },
+    { initials: 'RD', name: 'Rashmi Dulmini', role: 'Full Stack Developer' },
+    { initials: 'KG', name: 'Kaveesha Gangani', role: 'UI/UX Designer' },
   ];
 
   return (
@@ -271,7 +271,7 @@ export default function About() {
                 </div>
                 <h3 className="text-white font-bold">{member.name}</h3>
                 <p className="text-emerald-400 text-xs font-semibold mt-1 mb-3">{member.role}</p>
-                <p className="text-slate-400 text-sm leading-relaxed">{member.desc}</p>
+
               </div>
             ))}
           </div>
