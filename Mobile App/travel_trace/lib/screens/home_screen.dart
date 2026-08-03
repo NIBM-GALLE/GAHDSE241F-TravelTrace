@@ -18,6 +18,7 @@ import '../controllers/auth_controller.dart';
 import '../controllers/trip_controller.dart';
 import '../models/trip_model.dart';
 import '../widgets/trip_card.dart';
+import 'feedback_screen.dart';
 import 'login_screen.dart';
 import 'map_screen.dart';
 import 'register_screen.dart';
@@ -1531,7 +1532,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
-      body: _currentIndex == 0 ? _buildHomeContent() : _buildAccountContent(),
+      body: _currentIndex == 0
+          ? _buildHomeContent()
+          : _currentIndex == 2
+          ? const FeedbackScreen()
+          : _buildAccountContent(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1E2A3A),
@@ -1570,6 +1575,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Color(0xFF6EE7F7),
               ),
               label: 'New Trip',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.rate_review_rounded),
+              activeIcon: Icon(
+                Icons.rate_review_rounded,
+                color: Color(0xFF6EE7F7),
+              ),
+              label: 'Review',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_rounded),

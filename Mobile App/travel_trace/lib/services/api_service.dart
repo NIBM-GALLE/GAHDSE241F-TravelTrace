@@ -304,6 +304,45 @@ class ApiService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // REVIEW / FEEDBACK ENDPOINTS
+  // ═══════════════════════════════════════════════════════════
+
+  /// Fetch all reviews/feedbacks from the backend.
+  Future<List<Map<String, dynamic>>> fetchAllReviews() async {
+    final uri = Uri.parse('$baseUrl/reviews/all');
+    final response = await http
+        .get(uri, headers: _headers)
+        .timeout(const Duration(seconds: 15));
+    _assertSuccess(response, 'fetchAllReviews');
+    final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
+    return data.cast<Map<String, dynamic>>();
+  }
+
+  /// Create a new review/feedback for a trip.
+  Future<Map<String, dynamic>> createReview({
+    required int tripId,
+    required int userId,
+    required int rating,
+    required String comment,
+  }) async {
+    final uri = Uri.parse('$baseUrl/reviews');
+    final response = await http
+        .post(
+          uri,
+          headers: _headers,
+          body: jsonEncode({
+            'tripId': tripId,
+            'userId': userId,
+            'rating': rating,
+            'comment': comment,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+    _assertSuccess(response, 'createReview');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   // ─── Private Helpers ────────────────────────────────────────
 
   void _assertSuccess(http.Response response, String operation) {
