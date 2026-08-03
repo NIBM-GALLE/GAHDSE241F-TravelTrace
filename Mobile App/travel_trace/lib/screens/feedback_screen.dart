@@ -173,25 +173,30 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      final starNum = index + 1;
-                      return IconButton(
-                        icon: Icon(
-                          starNum <= selectedRating
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          color: starNum <= selectedRating
-                              ? const Color(0xFFFFB800)
-                              : Colors.white30,
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          setDialogState(() => selectedRating = starNum);
-                        },
-                      );
-                    }),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        final starNum = index + 1;
+                        return IconButton(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            starNum <= selectedRating
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            color: starNum <= selectedRating
+                                ? const Color(0xFFFFB800)
+                                : Colors.white30,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            setDialogState(() => selectedRating = starNum);
+                          },
+                        );
+                      }),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
