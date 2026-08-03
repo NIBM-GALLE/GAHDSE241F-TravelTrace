@@ -166,3 +166,29 @@ export async function fetchTrailById(id: string): Promise<Trail> {
   const data: BackendTrip = await res.json();
   return mapBackendTrip(data);
 }
+
+/** Shape of full User entity returned by GET /api/users/{id} */
+export interface FullUser {
+  id: number;
+  username: string;
+  email: string;
+  phoneNumber: string | null;
+  address: string | null;
+  profileImageUrl: string | null;
+  status: string;
+}
+
+/** Fetch full user profile details by ID (GET /api/users/{id}) */
+export async function fetchUserDetails(userId: number): Promise<FullUser> {
+  const res = await fetch(`${BASE_URL}/users/${userId}`);
+  if (!res.ok) throw new Error(`Failed to fetch user profile: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch all trips created by a specific user (GET /api/trips/user/{userId}) */
+export async function fetchUserTrails(userId: number): Promise<Trail[]> {
+  const res = await fetch(`${BASE_URL}/trips/user/${userId}`);
+  if (!res.ok) throw new Error(`Failed to fetch user trails: ${res.status}`);
+  const data: BackendTrip[] = await res.json();
+  return data.map(mapBackendTrip);
+}

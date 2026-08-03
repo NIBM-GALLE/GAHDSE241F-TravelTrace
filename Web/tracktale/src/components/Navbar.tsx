@@ -64,13 +64,17 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
-                  {/* User avatar + name */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
+                  {/* User avatar + name -> links to /profile */}
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+                    title="View Profile"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md border border-white/10 group-hover:scale-105 transition-transform">
                       <span className="text-white text-xs font-bold">{avatarInitials(user.username)}</span>
                     </div>
-                    <span className="text-slate-300 text-sm font-medium max-w-[110px] truncate">{user.username}</span>
-                  </div>
+                    <span className="text-slate-300 text-sm font-medium max-w-[110px] truncate group-hover:text-emerald-400 transition-colors">{user.username}</span>
+                  </Link>
                   <button
                     onClick={logout}
                     className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 border border-slate-600/40 hover:text-white hover:border-slate-500 transition-all"
@@ -137,12 +141,16 @@ export default function Navbar() {
               <div className="pt-2 px-4 space-y-2">
                 {user ? (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      to="/profile"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2"
+                    >
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
                         <span className="text-white text-xs font-bold">{avatarInitials(user.username)}</span>
                       </div>
-                      <span className="text-slate-300 text-sm">{user.username}</span>
-                    </div>
+                      <span className="text-slate-300 text-sm font-medium hover:text-emerald-400">{user.username}</span>
+                    </Link>
                     <button
                       onClick={() => { logout(); setMenuOpen(false); }}
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 border border-slate-600/40"

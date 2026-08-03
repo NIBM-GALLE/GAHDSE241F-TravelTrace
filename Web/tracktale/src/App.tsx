@@ -10,6 +10,7 @@ import TrailDetail from './pages/TrailDetail';
 import About from './pages/About';
 import Support from './pages/Support';
 import Reviews from './pages/Reviews';
+import UserProfile from './pages/UserProfile';
 import AdminLogin from './pages/AdminLogin';
 import AdminLayout from './pages/AdminPanel/AdminLayout';
 import Dashboard from './pages/AdminPanel/pages/Dashboard';
@@ -52,6 +53,7 @@ function AppLayout() {
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
           <Route path="/reviews" element={<Reviews />} />
+          <Route path="/profile" element={<UserProfile />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
