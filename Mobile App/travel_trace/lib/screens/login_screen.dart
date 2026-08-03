@@ -120,20 +120,33 @@ class _LoginScreenState extends State<LoginScreen>
 
                   // ── Logo area ────────────────────────────────
                   Container(
-                    width: 64,
-                    height: 64,
+                    width: 72,
+                    height: 72,
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: const Color(0xFF1E2A3A),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF6EE7F7).withOpacity(0.3),
                       ),
-                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6EE7F7).withOpacity(0.15),
+                          blurRadius: 16,
+                        ),
+                      ],
                     ),
-                    child: const Icon(
-                      Icons.travel_explore_rounded,
-                      color: Color(0xFF0A1628),
-                      size: 32,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/mobile_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.travel_explore_rounded,
+                          color: Color(0xFF6EE7F7),
+                          size: 36,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

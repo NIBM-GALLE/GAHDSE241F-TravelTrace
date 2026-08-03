@@ -1,16 +1,9 @@
 // src/pages/About.tsx
 export default function About() {
   const team = [
-    { initials: 'CS', name: 'Chaminda Silva', role: 'Full Stack Developer', desc: 'Built the Spring Boot backend, MySQL schema, and REST APIs. Passionate about clean architecture.' },
-    { initials: 'PJ', name: 'Priya Jayawardena', role: 'Flutter Developer', desc: 'Crafted the mobile app UI/UX, GPS tracking logic, and Cloudinary image integration.' },
-    { initials: 'NP', name: 'Nuwan Perera', role: 'UI/UX Designer', desc: 'Designed the TravelTrace brand identity, user flows, and the overall visual design system.' },
-  ];
-
-  const timeline = [
-    { year: '2024 Q1', title: 'Project Inception', desc: 'Identified the gap — Sri Lanka travellers had no dedicated trail tracking app.' },
-    { year: '2024 Q2', title: 'MVP Development', desc: 'Built the Spring Boot backend, Flutter mobile app, and core GPS tracking feature.' },
-    { year: '2024 Q3', title: 'Cloudinary Integration', desc: 'Added secure photo uploads via Cloudinary — waypoints now support rich media.' },
-    { year: '2024 Q4', title: 'Web Launch', desc: 'Launched the React web platform — explore community trails with interactive maps.' },
+    { initials: 'TK', name: 'Thalikoralage Nethmi', role: 'Full Stack Developer' },
+    { initials: 'RD', name: 'Rashmi Dulmini', role: 'Full Stack Developer' },
+    { initials: 'KG', name: 'Kaveesha Gangani', role: 'UI/UX Designer' },
   ];
 
   return (
@@ -93,63 +86,171 @@ export default function About() {
         </div>
       </section>
 
-      {/* Tech Stack */}
+      {/* Why TravelTrace / Key Features */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">Technology</span>
-            <h2 className="text-3xl font-extrabold mt-2 mb-3">Built with Modern Technology</h2>
+            <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">Why TravelTrace</span>
+            <h2 className="text-3xl font-extrabold mt-2 mb-3">Empowering Every Journey</h2>
             <p className="text-slate-400 max-w-xl mx-auto text-sm">
-              TravelTrace uses a robust, scalable stack chosen for performance, security, and developer experience.
+              Designed specifically for Sri Lanka's unique topography, TravelTrace helps you turn every hike, road trip, and coastal walk into a lasting visual legacy.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: '☕', name: 'Spring Boot', type: 'Backend API', color: 'from-orange-500 to-amber-600', desc: 'REST APIs, JPA entities, auto-created MySQL tables' },
-              { icon: '📱', name: 'Flutter', type: 'Mobile App', color: 'from-blue-500 to-cyan-500', desc: 'Cross-platform Android app with GPS & maps' },
-              { icon: '🐬', name: 'MySQL', type: 'Database', color: 'from-blue-600 to-blue-700', desc: 'Persistent trail, waypoint, and user data storage' },
-              { icon: '☁️', name: 'Cloudinary', type: 'Media Storage', color: 'from-blue-400 to-sky-500', desc: 'Secure CDN for waypoint photo uploads & delivery' },
-              { icon: '⚛️', name: 'React', type: 'Web Frontend', color: 'from-cyan-500 to-sky-500', desc: 'Component-based SPA with React Router' },
-              { icon: '🍃', name: 'Leaflet.js', type: 'Interactive Maps', color: 'from-emerald-500 to-green-600', desc: 'OpenStreetMap integration with route polylines' },
-              { icon: '🗺️', name: 'OpenStreetMap', type: 'Map Tiles', color: 'from-slate-500 to-slate-600', desc: 'Free, open-source mapping tiles worldwide' },
-              { icon: '⚡', name: 'Vite + TS', type: 'Build System', color: 'from-violet-500 to-purple-600', desc: 'Lightning-fast development with full TypeScript' },
-            ].map(tech => (
-              <div key={tech.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tech.color} flex items-center justify-center text-xl mb-3`}>
-                  {tech.icon}
+              {
+                icon: '📍',
+                title: 'Real-time GPS Tracking',
+                desc: 'Record your precise movement coordinates continuously, capturing every turn from Ella Rock to Horton Plains.',
+                border: 'border-emerald-500/20',
+              },
+              {
+                icon: '📸',
+                title: 'Photo Waypoints',
+                desc: 'Pin high-resolution geotagged photos to specific points on your map to relive your favorite moments.',
+                border: 'border-cyan-500/20',
+              },
+              {
+                icon: '🛡️',
+                title: 'Verified Trail Content',
+                desc: 'Enjoy peace of mind with admin-moderated trail approvals ensuring accurate, safe, and authentic recommendations.',
+                border: 'border-violet-500/20',
+              },
+              {
+                icon: '🌐',
+                title: 'Community Explorer',
+                desc: 'Discover hidden gems and uncharted paths curated and shared by travel enthusiasts across the island.',
+                border: 'border-amber-500/20',
+              },
+            ].map(feature => (
+              <div
+                key={feature.title}
+                className={`bg-slate-900 border ${feature.border} rounded-2xl p-6 hover:border-slate-700 transition-all duration-300 flex flex-col justify-between group`}
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-white font-bold text-base mb-2 group-hover:text-emerald-400 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                    {feature.desc}
+                  </p>
                 </div>
-                <p className="text-white font-bold text-sm">{tech.name}</p>
-                <p className="text-slate-500 text-xs mb-1">{tech.type}</p>
-                <p className="text-slate-400 text-xs leading-relaxed">{tech.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Timeline */}
+      {/* Featured Trail Showcase Section (Replaces Timeline) */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">Journey</span>
-            <h2 className="text-3xl font-extrabold mt-2">Project Timeline</h2>
+            <span className="text-emerald-400 text-sm font-bold uppercase tracking-widest">Trail Showcase</span>
+            <h2 className="text-3xl font-extrabold mt-2">Discover Sri Lanka Step by Step</h2>
+            <p className="text-slate-400 max-w-xl mx-auto text-sm mt-2">
+              From high-altitude hill country treks to tranquil coastal routes, see how TravelTrace maps real adventures into interactive visual guides.
+            </p>
           </div>
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-slate-800"></div>
-            <div className="space-y-8">
-              {timeline.map((item, i) => (
-                <div key={i} className="relative flex gap-6">
-                  <div className="w-16 flex-shrink-0 flex flex-col items-center">
-                    <div className="w-4 h-4 rounded-full bg-emerald-400 border-4 border-slate-950 z-10 mt-1.5"></div>
+
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl backdrop-blur-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Showcase Image & Map Card (7 cols) */}
+            <div className="lg:col-span-7 relative rounded-2xl overflow-hidden border border-slate-700/60 group shadow-2xl">
+              <div className="relative h-[320px] sm:h-[380px] bg-slate-800 overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1200&q=80"
+                  alt="Sri Lanka Hike Trail Showcase"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+                {/* Overlaid Route Polyline Simulation */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 600 380" preserveAspectRatio="none">
+                  <path
+                    d="M 50 300 Q 150 180, 260 220 T 450 120 T 550 80"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="8 4"
+                    className="opacity-90"
+                  />
+                  <circle cx="50" cy="300" r="8" fill="#34d399" stroke="white" strokeWidth="2" />
+                  <circle cx="260" cy="220" r="8" fill="#6ee7f7" stroke="white" strokeWidth="2" />
+                  <circle cx="450" cy="120" r="8" fill="#a78bfa" stroke="white" strokeWidth="2" />
+                  <circle cx="550" cy="80" r="10" fill="#f43f5e" stroke="white" strokeWidth="3" />
+                </svg>
+
+                {/* Top Overlay Badges */}
+                <div className="absolute top-4 left-4 flex gap-2">
+                  <span className="px-3 py-1 bg-slate-900/80 backdrop-blur border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    LIVE GPS ROUTE
+                  </span>
+                  <span className="px-3 py-1 bg-slate-900/80 backdrop-blur border border-slate-700 text-slate-300 text-xs font-medium rounded-full">
+                    Uva Province
+                  </span>
+                </div>
+
+                {/* Bottom Overlay Summary */}
+                <div className="absolute bottom-4 left-4 right-4 bg-slate-900/85 backdrop-blur border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-bold text-base">Ella Rock Summit & Nine Arch Trail</h4>
+                    <p className="text-slate-400 text-xs mt-0.5">Recorded by Priya • 4 Waypoints • 5.2 km</p>
                   </div>
-                  <div className="pb-4">
-                    <span className="text-emerald-400 text-xs font-bold">{item.year}</span>
-                    <h3 className="text-white font-bold mt-0.5 mb-1">{item.title}</h3>
-                    <p className="text-slate-400 text-sm">{item.desc}</p>
+                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/30">
+                    APPROVED
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Description Details (5 cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div>
+                <span className="text-emerald-400 text-xs font-extrabold uppercase tracking-widest">Interactive Waypoints</span>
+                <h3 className="text-2xl font-bold text-white mt-1 mb-3">
+                  Capture Every Stop Point & Memory
+                </h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Every recorded trail automatically captures route polyline paths, stop durations, and location-stamped waypoint photos. Travelers can explore each stop point with custom notes and high-resolution photos.
+                </p>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="flex gap-3 items-start">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0 font-bold text-sm">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="text-white text-sm font-semibold">Live GPS Mapping</h4>
+                    <p className="text-slate-400 text-xs mt-0.5">Automated route tracking rendered on interactive open-source maps.</p>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex gap-3 items-start">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 flex-shrink-0 font-bold text-sm">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-white text-sm font-semibold">Rich Waypoint Galleries</h4>
+                    <p className="text-slate-400 text-xs mt-0.5">Pin photos of scenic views, waterfalls, and cultural landmarks directly to the trail.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 items-start">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 flex-shrink-0 font-bold text-sm">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-white text-sm font-semibold">Community Moderation</h4>
+                    <p className="text-slate-400 text-xs mt-0.5">Only admin-approved, verified trails are published live for public discovery.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -170,7 +271,7 @@ export default function About() {
                 </div>
                 <h3 className="text-white font-bold">{member.name}</h3>
                 <p className="text-emerald-400 text-xs font-semibold mt-1 mb-3">{member.role}</p>
-                <p className="text-slate-400 text-sm leading-relaxed">{member.desc}</p>
+
               </div>
             ))}
           </div>

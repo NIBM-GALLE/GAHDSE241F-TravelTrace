@@ -9,6 +9,15 @@
     <!-- Internet — for OSM tiles and API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- ── Camera & Gallery permissions for image_picker ── -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Camera is optional — app still installs on devices without one -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:label="TravelTrace"
         android:name="${applicationName}"

@@ -10,7 +10,9 @@
 // Loads trips for the currently logged-in user once auth state is ready.
 // -----------------------------------------------------------
 
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/trip_controller.dart';
@@ -39,9 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _authController.addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_authController.isLoggedIn) {
-        context
-            .read<TripController>()
-            .loadUserTrips(_authController.currentUser!.id);
+        context.read<TripController>().loadUserTrips(
+          _authController.currentUser!.id,
+        );
       }
     });
   }
@@ -55,9 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onAuthChanged() {
     if (!mounted) return;
     if (_authController.isLoggedIn) {
-      context
-          .read<TripController>()
-          .loadUserTrips(_authController.currentUser!.id);
+      context.read<TripController>().loadUserTrips(
+        _authController.currentUser!.id,
+      );
     } else {
       context.read<TripController>().clearTrips();
     }
@@ -90,9 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     final auth = context.read<AuthController>();
     if (auth.isLoggedIn) {
-      await context
-          .read<TripController>()
-          .loadUserTrips(auth.currentUser!.id);
+      await context.read<TripController>().loadUserTrips(auth.currentUser!.id);
     }
   }
 
@@ -175,17 +175,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                   child: Row(
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          'assets/mobile_logo_backdrop.png',
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.add_location_alt_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.add_location_alt_rounded,
-                            color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
                       const Text(
@@ -199,8 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Spacer(),
                       GestureDetector(
                         onTap: () => Navigator.pop(ctx),
-                        child: const Icon(Icons.close_rounded,
-                            color: Colors.white38, size: 22),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white38,
+                          size: 22,
+                        ),
                       ),
                     ],
                   ),
@@ -221,10 +236,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           TextFormField(
                             controller: titleController,
                             style: const TextStyle(color: Colors.white),
-                            validator: (v) =>
-                                v == null || v.trim().isEmpty ? 'Title is required' : null,
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? 'Title is required'
+                                : null,
                             decoration: _inputDecoration(
-                                'e.g. Ella Sunrise Hike', Icons.map_rounded),
+                              'e.g. Ella Sunrise Hike',
+                              Icons.map_rounded,
+                            ),
                           ),
                           const SizedBox(height: 18),
 
@@ -235,7 +253,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: const TextStyle(color: Colors.white),
                             maxLines: 3,
                             decoration: _inputDecoration(
-                                'Tell us about this trip...', Icons.notes_rounded),
+                              'Tell us about this trip...',
+                              Icons.notes_rounded,
+                            ),
                           ),
                           const SizedBox(height: 18),
 
@@ -245,17 +265,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             value: selectedProvince,
                             dropdownColor: const Color(0xFF1E2A3A),
                             style: const TextStyle(color: Colors.white),
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                                color: Colors.white38),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white38,
+                            ),
                             decoration: _inputDecoration(
-                                'Select province', Icons.location_on_rounded),
+                              'Select province',
+                              Icons.location_on_rounded,
+                            ),
                             items: provinces
-                                .map((p) => DropdownMenuItem(
-                                      value: p,
-                                      child: Text(p,
-                                          style: const TextStyle(
-                                              color: Colors.white, fontSize: 14)),
-                                    ))
+                                .map(
+                                  (p) => DropdownMenuItem(
+                                    value: p,
+                                    child: Text(
+                                      p,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) =>
                                 setModalState(() => selectedProvince = val),
@@ -268,17 +298,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             value: selectedDuration,
                             dropdownColor: const Color(0xFF1E2A3A),
                             style: const TextStyle(color: Colors.white),
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                                color: Colors.white38),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white38,
+                            ),
                             decoration: _inputDecoration(
-                                'How long?', Icons.schedule_rounded),
+                              'How long?',
+                              Icons.schedule_rounded,
+                            ),
                             items: durations
-                                .map((d) => DropdownMenuItem(
-                                      value: d,
-                                      child: Text(d,
-                                          style: const TextStyle(
-                                              color: Colors.white, fontSize: 14)),
-                                    ))
+                                .map(
+                                  (d) => DropdownMenuItem(
+                                    value: d,
+                                    child: Text(
+                                      d,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) =>
                                 setModalState(() => selectedDuration = val),
@@ -291,8 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             'Select all that apply',
                             style: TextStyle(
-                                color: Colors.white.withOpacity(0.35),
-                                fontSize: 11),
+                              color: Colors.white.withOpacity(0.35),
+                              fontSize: 11,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Wrap(
@@ -311,10 +352,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 150),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 7),
+                                    horizontal: 14,
+                                    vertical: 7,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? const Color(0xFF6EE7F7).withOpacity(0.15)
+                                        ? const Color(
+                                            0xFF6EE7F7,
+                                          ).withOpacity(0.15)
                                         : Colors.white.withOpacity(0.05),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
@@ -349,36 +394,47 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (!formKey.currentState!.validate()) return;
                                 Navigator.pop(ctx);
                                 await context.read<TripController>().createTrip(
-                                      userId: userId,
-                                      title: titleController.text.trim(),
-                                      description: descController.text.trim(),
-                                      province: selectedProvince ?? '',
-                                      duration: selectedDuration ?? '',
-                                      tags: selectedTags.toList(),
-                                    );
+                                  userId: userId,
+                                  title: titleController.text.trim(),
+                                  description: descController.text.trim(),
+                                  province: selectedProvince ?? '',
+                                  duration: selectedDuration ?? '',
+                                  tags: selectedTags.toList(),
+                                );
                               },
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 15),
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
-                              ).copyWith(
-                                backgroundColor: WidgetStateProperty.all(
-                                    Colors.transparent),
-                                overlayColor: WidgetStateProperty.all(
-                                    Colors.white.withOpacity(0.08)),
-                              ),
+                              style:
+                                  ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ).copyWith(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      Colors.transparent,
+                                    ),
+                                    overlayColor: WidgetStateProperty.all(
+                                      Colors.white.withOpacity(0.08),
+                                    ),
+                                  ),
                               child: Ink(
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
+                                    colors: [
+                                      Color(0xFF6EE7F7),
+                                      Color(0xFFA78BFA),
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Container(
                                   alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(vertical: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 15,
+                                  ),
                                   child: const Text(
                                     'Create Trip',
                                     style: TextStyle(
@@ -423,8 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, size: 18, color: Colors.white38),
-      labelStyle:
-          TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
       filled: true,
       fillColor: Colors.white.withOpacity(0.05),
       border: OutlineInputBorder(
@@ -503,7 +558,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: const Color(0xFF6EE7F7).withOpacity(0.25),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ]
                       : null,
                 ),
@@ -511,8 +566,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF0A1628) : Colors.white70,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF0A1628)
+                          : Colors.white70,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
                       fontSize: 13,
                     ),
                   ),
@@ -575,11 +634,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 60, right: 20),
-                  child: Icon(
-                    Icons.travel_explore_rounded,
-                    size: 80,
-                    color: const Color(0xFF6EE7F7).withOpacity(0.08),
+                  padding: const EdgeInsets.only(top: 45, right: 16),
+                  child: Image.asset(
+                    'assets/mobile_logo_backdrop.png',
+                    height: 85,
+                    fit: BoxFit.contain,
+                    opacity: const AlwaysStoppedAnimation(0.25),
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.travel_explore_rounded,
+                      size: 80,
+                      color: const Color(0xFF6EE7F7).withOpacity(0.08),
+                    ),
                   ),
                 ),
               ),
@@ -588,8 +653,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         // ── Filter Selector (Only if logged in) ──────────────
-        if (context.watch<AuthController>().isLoggedIn)
-          _buildFilterSelector(),
+        if (context.watch<AuthController>().isLoggedIn) _buildFilterSelector(),
 
         // ── Trip List ──────────────────────────────────────
         Consumer<TripController>(
@@ -597,9 +661,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (controller.isLoading) {
               return const SliverFillRemaining(
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF6EE7F7),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFF6EE7F7)),
                 ),
               );
             }
@@ -612,14 +674,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.cloud_off_rounded,
-                            color: Colors.white24, size: 60),
+                        const Icon(
+                          Icons.cloud_off_rounded,
+                          color: Colors.white24,
+                          size: 60,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           controller.errorMessage,
                           style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                              fontSize: 14),
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 14,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
@@ -627,8 +693,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () {
                             final auth = context.read<AuthController>();
                             if (auth.isLoggedIn) {
-                              controller.loadUserTrips(
-                                  auth.currentUser!.id);
+                              controller.loadUserTrips(auth.currentUser!.id);
                             }
                           },
                           icon: const Icon(Icons.refresh_rounded, size: 18),
@@ -758,49 +823,75 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             return SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final trip = filteredTrips[index];
-                  return TripCard(
-                    trip: trip,
-                    onTap: () => _openTrip(trip),
-                    onDelete: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: const Color(0xFF1E2A3A),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          title: const Text('Delete Trip',
-                              style: TextStyle(color: Colors.white)),
-                          content: Text(
-                            'Delete "${trip.title}"? This cannot be undone.',
-                            style: TextStyle(
-                                color: Colors.white.withOpacity(0.6)),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final trip = filteredTrips[index];
+                return TripCard(
+                  trip: trip,
+                  onTap: () => _openTrip(trip),
+                  onDelete: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: const Color(0xFF1E2A3A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        title: const Text(
+                          'Delete Trip',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        content: Text(
+                          'Delete "${trip.title}"? This cannot be undone.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
                           ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel',
-                                  style: TextStyle(color: Colors.white54)),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(color: Colors.white54),
                             ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.redAccent),
-                              child: const Text('Delete'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
                             ),
-                          ],
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true && context.mounted) {
+                      controller.deleteTrip(trip.id);
+                    }
+                  },
+                  onPublish: () async {
+                    final success = await controller.publishTrip(trip.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            success
+                                ? 'Trail submitted for admin review!'
+                                : 'Failed to publish trail',
+                          ),
+                          backgroundColor: success
+                              ? const Color(0xFF2563EB)
+                              : Colors.redAccent,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.all(16),
                         ),
                       );
-                      if (confirmed == true && context.mounted) {
-                        controller.deleteTrip(trip.id);
-                      }
-                    },
-                  );
-                },
-                childCount: filteredTrips.length,
-              ),
+                    }
+                  },
+                );
+              }, childCount: filteredTrips.length),
             );
           },
         ),
@@ -809,6 +900,141 @@ class _HomeScreenState extends State<HomeScreen> {
         const SliverToBoxAdapter(child: SizedBox(height: 40)),
       ],
     );
+  }
+
+  // ── Profile Image Picker ──────────────────────────────────
+  Future<void> _pickAndUploadProfileImage(AuthController auth) async {
+    if (auth.isUploadingProfileImage) return;
+
+    final picker = ImagePicker();
+
+    // Show source picker bottom sheet
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E2A3A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Change Profile Photo',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6EE7F7).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Color(0xFF6EE7F7),
+                  size: 22,
+                ),
+              ),
+              title: const Text(
+                'Take Photo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Use your camera',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            const Divider(color: Colors.white10, height: 8),
+            ListTile(
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFA78BFA).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.photo_library_rounded,
+                  color: Color(0xFFA78BFA),
+                  size: 22,
+                ),
+              ),
+              title: const Text(
+                'Choose from Gallery',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Pick an existing photo',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+    if (picked == null || !mounted) return;
+
+    final imageFile = File(picked.path);
+    final success = await auth.updateProfileImage(imageFile);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Profile photo updated!'
+                : 'Failed to update profile photo',
+          ),
+          backgroundColor: success ? const Color(0xFF22C55E) : Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
   }
 
   // ── User Account View Content ──────────────────────────────
@@ -890,34 +1116,119 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Column(
                           children: [
-                            // Beautiful Initials Circle
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF6EE7F7), Color(0xFFA78BFA)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF6EE7F7).withOpacity(0.3),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 5),
+                            // Profile Avatar with Change Photo Overlay
+                            GestureDetector(
+                              onTap: () => _pickAndUploadProfileImage(auth),
+                              child: Stack(
+                                children: [
+                                  // Avatar — show profile image or initials
+                                  auth.currentUser!.profileImageUrl.isNotEmpty
+                                      ? Container(
+                                          width: 88,
+                                          height: 88,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(
+                                                0xFF6EE7F7,
+                                              ).withOpacity(0.5),
+                                              width: 3,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(
+                                                  0xFF6EE7F7,
+                                                ).withOpacity(0.3),
+                                                blurRadius: 15,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                            image: DecorationImage(
+                                              image: NetworkImage(
+                                                auth
+                                                    .currentUser!
+                                                    .profileImageUrl,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 88,
+                                          height: 88,
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF6EE7F7),
+                                                Color(0xFFA78BFA),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(
+                                                  0xFF6EE7F7,
+                                                ).withOpacity(0.3),
+                                                blurRadius: 15,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              auth.currentUser!.username
+                                                  .substring(0, 2)
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Color(0xFF0A1628),
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                  // Camera icon overlay
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF6EE7F7),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF1E2A3A),
+                                          width: 2.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(
+                                              0xFF6EE7F7,
+                                            ).withOpacity(0.4),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: auth.isUploadingProfileImage
+                                          ? const Padding(
+                                              padding: EdgeInsets.all(6),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xFF0A1628),
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.camera_alt_rounded,
+                                              size: 15,
+                                              color: Color(0xFF0A1628),
+                                            ),
+                                    ),
                                   ),
                                 ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  auth.currentUser!.username.substring(0, 2).toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Color(0xFF0A1628),
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -946,15 +1257,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildStatItem('Ongoing', ongoingTrips, const Color(0xFF34D399)),
+                            child: _buildStatItem(
+                              'Ongoing',
+                              ongoingTrips,
+                              const Color(0xFF34D399),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildStatItem('Completed', completedTrips, const Color(0xFF6EE7F7)),
+                            child: _buildStatItem(
+                              'Completed',
+                              completedTrips,
+                              const Color(0xFF6EE7F7),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildStatItem('Planned', plannedTrips, const Color(0xFFA78BFA)),
+                            child: _buildStatItem(
+                              'Planned',
+                              plannedTrips,
+                              const Color(0xFFA78BFA),
+                            ),
                           ),
                         ],
                       ),
@@ -983,11 +1306,23 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            _buildInfoRow(Icons.phone_iphone_rounded, 'Phone Number', auth.currentUser!.phoneNumber),
+                            _buildInfoRow(
+                              Icons.phone_iphone_rounded,
+                              'Phone Number',
+                              auth.currentUser!.phoneNumber,
+                            ),
                             const Divider(color: Colors.white10, height: 24),
-                            _buildInfoRow(Icons.location_on_rounded, 'Address', auth.currentUser!.address),
+                            _buildInfoRow(
+                              Icons.location_on_rounded,
+                              'Address',
+                              auth.currentUser!.address,
+                            ),
                             const Divider(color: Colors.white10, height: 24),
-                            _buildInfoRow(Icons.map_rounded, 'Total Trails', '$totalTrips saved'),
+                            _buildInfoRow(
+                              Icons.map_rounded,
+                              'Total Trails',
+                              '$totalTrips saved',
+                            ),
                           ],
                         ),
                       ),
@@ -1005,7 +1340,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: const Icon(Icons.logout_rounded, size: 20),
                           label: const Text('Sign Out'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4444).withOpacity(0.15),
+                            backgroundColor: const Color(
+                              0xFFEF4444,
+                            ).withOpacity(0.15),
                             foregroundColor: const Color(0xFFFCA5A5),
                             side: BorderSide(
                               color: const Color(0xFFEF4444).withOpacity(0.4),
@@ -1066,12 +1403,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () async {
                               await Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
                               );
                               if (mounted) {
                                 final auth = context.read<AuthController>();
                                 if (auth.isLoggedIn) {
-                                  context.read<TripController>().loadUserTrips(auth.currentUser!.id);
+                                  context.read<TripController>().loadUserTrips(
+                                    auth.currentUser!.id,
+                                  );
                                 }
                               }
                             },
@@ -1086,18 +1427,25 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () async {
                               await Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen(),
+                                ),
                               );
                               if (mounted) {
                                 final auth = context.read<AuthController>();
                                 if (auth.isLoggedIn) {
-                                  context.read<TripController>().loadUserTrips(auth.currentUser!.id);
+                                  context.read<TripController>().loadUserTrips(
+                                    auth.currentUser!.id,
+                                  );
                                 }
                               }
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF6EE7F7),
-                              side: const BorderSide(color: Color(0xFF6EE7F7), width: 1.5),
+                              side: const BorderSide(
+                                color: Color(0xFF6EE7F7),
+                                width: 1.5,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -1120,10 +1468,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2A3A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Column(
         children: [
@@ -1191,10 +1536,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E2A3A),
           border: Border(
-            top: BorderSide(
-              color: Colors.white.withOpacity(0.08),
-              width: 1.0,
-            ),
+            top: BorderSide(color: Colors.white.withOpacity(0.08), width: 1.0),
           ),
         ),
         child: BottomNavigationBar(
@@ -1223,7 +1565,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.add_circle_outline_rounded),
-              activeIcon: Icon(Icons.add_circle_outline_rounded, color: Color(0xFF6EE7F7)),
+              activeIcon: Icon(
+                Icons.add_circle_outline_rounded,
+                color: Color(0xFF6EE7F7),
+              ),
               label: 'New Trip',
             ),
             BottomNavigationBarItem(
@@ -1266,16 +1611,35 @@ class _AuthBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          // Icon
+          // Logo
           Container(
-            width: 60,
-            height: 60,
+            width: 68,
+            height: 68,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6EE7F7).withOpacity(0.12),
+              color: const Color(0xFF0A1628),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF6EE7F7).withOpacity(0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6EE7F7).withOpacity(0.15),
+                  blurRadius: 16,
+                ),
+              ],
             ),
-            child: const Icon(Icons.travel_explore_rounded,
-                color: Color(0xFF6EE7F7), size: 28),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/mobile_logo_backdrop.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.travel_explore_rounded,
+                  color: Color(0xFF6EE7F7),
+                  size: 32,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 18),
 
@@ -1314,11 +1678,14 @@ class _AuthBottomSheet extends StatelessWidget {
                 backgroundColor: const Color(0xFF6EE7F7),
                 foregroundColor: const Color(0xFF0A1628),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
-              child: const Text('Sign In',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'Sign In',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -1339,10 +1706,13 @@ class _AuthBottomSheet extends StatelessWidget {
                 foregroundColor: const Color(0xFF6EE7F7),
                 side: const BorderSide(color: Color(0xFF6EE7F7), width: 1.5),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: const Text('Create Account',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Create Account',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],

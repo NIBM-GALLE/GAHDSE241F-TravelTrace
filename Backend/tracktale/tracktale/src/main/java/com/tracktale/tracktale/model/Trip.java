@@ -60,6 +60,20 @@ public class Trip {
     private String tags;
 
     /**
+     * Whether the user has submitted this trail for review.
+     * Set to true when the mobile user taps "Publish".
+     */
+    @Column(nullable = false)
+    private boolean published = false;
+
+    /**
+     * Whether the admin has approved this trail for public display.
+     * Only trails with published=true AND approved=true appear on the web Explore page.
+     */
+    @Column(nullable = false)
+    private boolean approved = false;
+
+    /**
      * The owning user — serialized as a nested object but strips the
      * back-reference (trips list) to prevent infinite recursion.
      */

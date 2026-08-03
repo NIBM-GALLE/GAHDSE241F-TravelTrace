@@ -2,6 +2,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { fetchTrailById, type Trail, type Waypoint } from '../api/trailsApi';
+import { fetchReviewsByTrip, createReview, type Review } from '../api/reviewApi';
+import { useUserAuth } from '../context/UserAuthContext';
+import AuthModal from '../components/AuthModal';
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -23,12 +26,24 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string; bor
 export default function TrailDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useUserAuth();
 
   const [trail, setTrail] = useState<Trail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
   const [hoveredWaypoint, setHoveredWaypoint] = useState<Waypoint | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  // Review state
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -45,6 +60,48 @@ export default function TrailDetail() {
       .catch(err => { if (!cancelled) { setError(err.message); setLoading(false); } });
     return () => { cancelled = true; };
   }, [id]);
+
+  // ── Fetch reviews for this trail ────────────────────────────
+  useEffect(() => {
+    if (!id) return;
+    fetchReviewsByTrip(id).then(setReviews).catch(() => {});
+  }, [id]);
+
+  // ── Auto-open review form when user logs in via popup ────────
+  useEffect(() => {
+    if (user && authModalOpen) {
+      setAuthModalOpen(false);
+      setShowReviewForm(true);
+    }
+  }, [user, authModalOpen]);
+
+  const handleSubmitReview = async () => {
+    if (!user || !id) return;
+    setReviewError('');
+    setReviewSubmitting(true);
+    try {
+      const newReview = await createReview(Number(id), user.id, reviewRating, reviewComment);
+      setReviews(prev => [newReview, ...prev]);
+      setReviewComment('');
+      setReviewRating(5);
+      setShowReviewForm(false);
+    } catch (err: any) {
+      setReviewError(err.message || 'Failed to submit review.');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const avatarInit = (name: string) => {
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const fmtDate = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch { return iso; }
+  };
 
   // ── Init Leaflet map once trail loads ───────────────────────
   useEffect(() => {
@@ -156,6 +213,7 @@ export default function TrailDetail() {
   const activeWaypoint = selectedWaypoint || hoveredWaypoint;
 
   return (
+    <>
     <div className="min-h-screen bg-slate-950 pt-16 flex flex-col">
       {/* Top bar */}
       <div className="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-3">
@@ -243,9 +301,22 @@ export default function TrailDetail() {
                 <p className="text-slate-400 text-xs leading-relaxed mb-3">{activeWaypoint.note}</p>
 
                 {/* Waypoint photo or placeholder */}
-                {activeWaypoint.imageUrl ? (
-                  <div className="w-full h-28 rounded-xl overflow-hidden mb-2">
-                    <img src={activeWaypoint.imageUrl} alt={activeWaypoint.name} className="w-full h-full object-cover" />
+                {activeWaypoint.imageUrl && !brokenImages.has(activeWaypoint.imageUrl) ? (
+                  <div
+                    className="w-full h-36 rounded-xl overflow-hidden mb-2 cursor-pointer group relative"
+                    onClick={() => setLightboxUrl(activeWaypoint.imageUrl)}
+                  >
+                    <img
+                      src={activeWaypoint.imageUrl}
+                      alt={activeWaypoint.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={() => setBrokenImages(prev => new Set(prev).add(activeWaypoint.imageUrl))}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-28 rounded-xl bg-slate-800 flex items-center justify-center mb-2">
@@ -306,8 +377,18 @@ export default function TrailDetail() {
                           <span className="text-slate-600 text-xs flex-shrink-0">#{i + 1}</span>
                         </div>
                         <p className="text-slate-400 text-xs mt-0.5 line-clamp-2">{wp.note}</p>
-                        {wp.imageUrl && (
-                          <p className="text-emerald-400 text-xs mt-1">📸 Photo attached</p>
+                        {wp.imageUrl && !brokenImages.has(wp.imageUrl) && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className="w-4 h-4 rounded overflow-hidden flex-shrink-0">
+                              <img
+                                src={wp.imageUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={() => setBrokenImages(prev => new Set(prev).add(wp.imageUrl))}
+                              />
+                            </div>
+                            <p className="text-emerald-400 text-xs">📸 Photo</p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -348,10 +429,175 @@ export default function TrailDetail() {
                   </div>
                 ))}
               </div>
+
+              {/* ── Trail Photos Gallery ──────────────────────────── */}
+              {(() => {
+                const photosWithWp = trail.waypoints
+                  .filter(wp => wp.imageUrl && !brokenImages.has(wp.imageUrl));
+                if (photosWithWp.length === 0) return null;
+                return (
+                  <div className="mt-6 pt-4 border-t border-slate-800">
+                    <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+                      📸 Trail Photos ({photosWithWp.length})
+                    </h2>
+                    <div className="grid grid-cols-2 gap-2">
+                      {photosWithWp.map((wp) => (
+                        <div
+                          key={`photo-${wp.id}`}
+                          className="relative rounded-lg overflow-hidden cursor-pointer group aspect-square"
+                          onClick={() => setLightboxUrl(wp.imageUrl)}
+                        >
+                          <img
+                            src={wp.imageUrl}
+                            alt={wp.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            onError={() => setBrokenImages(prev => new Set(prev).add(wp.imageUrl))}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            <p className="text-white text-xs font-semibold truncate">{wp.name}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Reviews Section ───────────────────────── */}
+              <div className="mt-6 pt-4 border-t border-slate-800">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    💬 Reviews ({reviews.length})
+                  </h2>
+                  <button
+                    onClick={() => {
+                      if (!user) { setAuthModalOpen(true); return; }
+                      setShowReviewForm(!showReviewForm);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-semibold hover:from-emerald-400 hover:to-cyan-400 transition-all"
+                  >
+                    {showReviewForm ? 'Cancel' : 'Write Review'}
+                  </button>
+                </div>
+
+                {/* Review Form */}
+                {showReviewForm && user && (
+                  <div className="mb-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700/40">
+                    {/* Star selector */}
+                    <div className="flex items-center gap-1 mb-3">
+                      <span className="text-xs text-slate-400 mr-2">Rating:</span>
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <button
+                          key={i}
+                          onClick={() => setReviewRating(i)}
+                          className="focus:outline-none"
+                        >
+                          <svg
+                            className={`w-5 h-5 transition-colors ${i <= reviewRating ? 'text-amber-400' : 'text-slate-600 hover:text-slate-500'}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                    {/* Comment textarea */}
+                    <textarea
+                      value={reviewComment}
+                      onChange={e => setReviewComment(e.target.value)}
+                      placeholder="Share your experience on this trail…"
+                      rows={3}
+                      className="w-full px-3 py-2 rounded-lg bg-slate-900/50 border border-slate-600/30 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 resize-none"
+                    />
+                    {reviewError && (
+                      <p className="text-red-400 text-xs mt-1">{reviewError}</p>
+                    )}
+                    <button
+                      onClick={handleSubmitReview}
+                      disabled={reviewSubmitting || !reviewComment.trim()}
+                      className="mt-2 px-4 py-2 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      {reviewSubmitting ? 'Posting…' : 'Post Review'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Reviews List */}
+                {reviews.length === 0 ? (
+                  <p className="text-slate-500 text-sm">No reviews yet. Be the first to share your thoughts!</p>
+                ) : (
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                    {reviews.map(r => (
+                      <div key={r.id} className="p-3 rounded-xl bg-slate-800/30 border border-slate-700/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                              <span className="text-white text-[10px] font-bold">{avatarInit(r.user.username)}</span>
+                            </div>
+                            <div>
+                              <p className="text-white text-xs font-semibold">{r.user.username}</p>
+                              <p className="text-slate-500 text-[10px]">{fmtDate(r.createdAt)}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(i => (
+                              <svg key={i} className={`w-3 h-3 ${i <= r.rating ? 'text-amber-400' : 'text-slate-600'}`} fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-slate-300 text-xs leading-relaxed">{r.comment}</p>
+                        {/* Admin reply */}
+                        {r.adminReply && (
+                          <div className="mt-2 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <svg className="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                              <span className="text-emerald-400 text-[10px] font-bold uppercase">Admin Reply</span>
+                            </div>
+                            <p className="text-slate-300 text-xs leading-relaxed pl-4">{r.adminReply}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
+
+      {/* ── Lightbox modal ─────────────────────────────────────── */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Full size photo"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       </div>
     </div>
+
+    {/* Auth Modal for unauthenticated review attempt */}
+    <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+    </>
   );
 }

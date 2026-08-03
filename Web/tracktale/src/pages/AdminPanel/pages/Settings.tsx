@@ -3,6 +3,8 @@ import {
   FileText, Terminal, Shield
 } from 'lucide-react';
 
+import logoImg from '../../../assets/travel_trace_logo.png';
+
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('General');
 
@@ -68,8 +70,8 @@ export default function Settings() {
             <div className="space-y-3">
               <label className="text-sm font-medium text-slate-600">Organization Logo</label>
               <div className="bg-slate-50 rounded-xl p-4 flex items-center gap-6 border border-slate-100">
-                <div className="w-16 h-16 bg-white rounded-lg shadow-sm border border-slate-100 flex items-center justify-center font-bold text-blue-600">
-                  TT
+                <div className="w-16 h-16 bg-white rounded-lg shadow-sm border border-slate-100 flex items-center justify-center p-2">
+                  <img src={logoImg} alt="TravelTrace Logo" className="w-full h-full object-contain" />
                 </div>
                 <div className="flex items-center gap-4">
                   <button className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm">

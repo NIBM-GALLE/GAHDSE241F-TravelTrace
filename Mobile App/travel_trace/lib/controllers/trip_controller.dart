@@ -114,16 +114,22 @@ class TripController extends ChangeNotifier {
 
     try {
       // Backend stores waypoints as a JSON string — send flat lat/lng keys
+      debugPrint('[TripController] 📤 addWaypoint called:');
+      debugPrint('[TripController]    name=$name, note=$note');
+      debugPrint('[TripController]    photoUrl="$photoUrl"');
+      debugPrint('[TripController]    lat=$latitude, lng=$longitude');
+      final waypointData = {
+        'name': name,
+        'note': note,
+        'imageUrl': photoUrl,    // backend uses imageUrl key
+        'lat': latitude,         // backend uses lat/lng keys
+        'lng': longitude,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      debugPrint('[TripController]    waypointData: $waypointData');
       final updatedTrip = await _api.addWaypoint(
         tripId: _activeTrip!.id,
-        waypointData: {
-          'name': name,
-          'note': note,
-          'imageUrl': photoUrl,    // backend uses imageUrl key
-          'lat': latitude,         // backend uses lat/lng keys
-          'lng': longitude,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        waypointData: waypointData,
       );
 
       // Use the fresh TripModel returned by the backend
@@ -214,6 +220,23 @@ class TripController extends ChangeNotifier {
       await _api.deleteTrip(tripId);
       _trips.removeWhere((t) => t.id == tripId);
       if (_activeTrip?.id == tripId) _activeTrip = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // publishTrip
+  // Submits a completed trip for admin review.
+  // ═══════════════════════════════════════════════════════════
+  Future<bool> publishTrip(String tripId) async {
+    try {
+      final updated = await _api.publishTrip(tripId);
+      _updateTripInList(updated);
+      if (_activeTrip?.id == tripId) _activeTrip = updated;
       notifyListeners();
       return true;
     } catch (e) {

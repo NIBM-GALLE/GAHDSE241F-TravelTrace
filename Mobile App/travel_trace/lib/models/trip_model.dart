@@ -86,6 +86,8 @@ class TripModel {
   final List<List<double>> routeCoordinates; // [[lng, lat], ...]
   final List<WaypointModel> waypoints;
   final String coverPhotoUrl;
+  final bool published;  // user submitted for review
+  final bool approved;   // admin approved for public display
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -102,6 +104,8 @@ class TripModel {
     required this.routeCoordinates,
     required this.waypoints,
     required this.coverPhotoUrl,
+    this.published = false,
+    this.approved = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -180,6 +184,8 @@ class TripModel {
       routeCoordinates: routeCoords,
       waypoints: waypoints,
       coverPhotoUrl: '',
+      published: json['published'] as bool? ?? false,
+      approved: json['approved'] as bool? ?? false,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
@@ -211,6 +217,8 @@ class TripModel {
     List<List<double>>? routeCoordinates,
     List<WaypointModel>? waypoints,
     String? coverPhotoUrl,
+    bool? published,
+    bool? approved,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -227,6 +235,8 @@ class TripModel {
       routeCoordinates: routeCoordinates ?? this.routeCoordinates,
       waypoints: waypoints ?? this.waypoints,
       coverPhotoUrl: coverPhotoUrl ?? this.coverPhotoUrl,
+      published: published ?? this.published,
+      approved: approved ?? this.approved,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

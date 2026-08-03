@@ -27,7 +27,7 @@ class ApiService {
   // ── Base URL ──────────────────────────────────────────────
   // Android emulator → 10.0.2.2 maps to host localhost
   // Physical device  → use your LAN IP (e.g. 192.168.x.x)
-  static const String baseUrl = 'http://192.168.1.4:5000/api';
+  static const String baseUrl = 'http://192.168.43.62:5000/api';
 
   /// Shared JSON headers
   static const Map<String, String> _headers = {
@@ -266,6 +266,42 @@ class ApiService {
     return TripModel.fromJson(
       jsonDecode(response.body) as Map<String, dynamic>,
     );
+  }
+
+  // ── PATCH /api/trips/{id}/publish ──────────────────────────
+  /// Submit a completed trip for admin review.
+  Future<TripModel> publishTrip(String tripId) async {
+    final uri = Uri.parse('$baseUrl/trips/$tripId/publish');
+
+    final response = await http
+        .patch(uri, headers: _headers)
+        .timeout(const Duration(seconds: 15));
+
+    _assertSuccess(response, 'publishTrip');
+    return TripModel.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  // ── PATCH /api/users/{id}/profile-image ─────────────────────
+  /// Update the user's profile image URL (Cloudinary URL).
+  /// Returns the updated user map.
+  Future<Map<String, dynamic>> updateProfileImage({
+    required String userId,
+    required String profileImageUrl,
+  }) async {
+    final uri = Uri.parse('$baseUrl/users/$userId/profile-image');
+
+    final response = await http
+        .patch(
+          uri,
+          headers: _headers,
+          body: jsonEncode({'profileImageUrl': profileImageUrl}),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    _assertSuccess(response, 'updateProfileImage');
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   // ─── Private Helpers ────────────────────────────────────────

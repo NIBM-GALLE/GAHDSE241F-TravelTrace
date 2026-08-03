@@ -138,4 +138,42 @@ public class TripController {
         Trip updated = tripService.updateStatus(id, newStatus);
         return ResponseEntity.ok(updated);
     }
+
+    // -------------------------------------------------------------------------
+    // GET /api/trips/approved
+    // Retrieve only published AND approved trails — for public web Explore page
+    // -------------------------------------------------------------------------
+    @GetMapping("/approved")
+    public ResponseEntity<List<Trip>> getApprovedTrips() {
+        List<Trip> trips = tripService.getApprovedTrips();
+        return ResponseEntity.ok(trips);
+    }
+
+    // -------------------------------------------------------------------------
+    // PATCH /api/trips/{id}/publish
+    // User submits a completed trail for admin review
+    // -------------------------------------------------------------------------
+    @PatchMapping("/{id}/publish")
+    public ResponseEntity<Trip> publishTrip(@PathVariable Long id) {
+        try {
+            Trip updated = tripService.publishTrip(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // PATCH /api/trips/{id}/approve
+    // Admin approves a published trail for public display
+    // -------------------------------------------------------------------------
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<Trip> approveTrip(@PathVariable Long id) {
+        try {
+            Trip updated = tripService.approveTrip(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
+import { UserAuthProvider } from './context/UserAuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -8,6 +9,8 @@ import Explore from './pages/Explore';
 import TrailDetail from './pages/TrailDetail';
 import About from './pages/About';
 import Support from './pages/Support';
+import Reviews from './pages/Reviews';
+import UserProfile from './pages/UserProfile';
 import AdminLogin from './pages/AdminLogin';
 import AdminLayout from './pages/AdminPanel/AdminLayout';
 import Dashboard from './pages/AdminPanel/pages/Dashboard';
@@ -49,6 +52,8 @@ function AppLayout() {
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/profile" element={<UserProfile />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
@@ -86,9 +91,11 @@ function AppLayout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AdminAuthProvider>
-        <AppLayout />
-      </AdminAuthProvider>
+      <UserAuthProvider>
+        <AdminAuthProvider>
+          <AppLayout />
+        </AdminAuthProvider>
+      </UserAuthProvider>
     </BrowserRouter>
   );
 }

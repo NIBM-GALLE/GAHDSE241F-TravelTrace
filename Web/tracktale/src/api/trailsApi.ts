@@ -5,7 +5,7 @@
 // ──────────────────────────────────────────────────────────────
 
 // Backend base URL — reads from Vite env var, falls back to local
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.1.4:5000/api';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.43.62:5000/api';
 
 // ── TypeScript interfaces matching Spring Boot entity ─────────
 
@@ -36,6 +36,8 @@ export interface BackendTrip {
   tags: string | null;        // comma-separated e.g. "Hiking,Scenic"
   routeData: string | null;   // JSON string "[[lng,lat],[lng,lat]]"
   waypointsData: string | null; // JSON string "[{...},{...}]"
+  published?: boolean;
+  approved?: boolean;
   user: BackendUser;
 }
 
@@ -44,6 +46,7 @@ export interface Trail {
   id: string;
   title: string;
   username: string;
+  userEmail: string;
   userAvatar: string;        // 2-letter initials
   description: string;
   status: 'PLANNED' | 'ONGOING' | 'COMPLETED';
@@ -55,6 +58,8 @@ export interface Trail {
   coverImage: string;
   createdAt: string;         // "YYYY-MM-DD"
   tags: string[];
+  published: boolean;
+  approved: boolean;
 }
 
 // ── Parsers ───────────────────────────────────────────────────
@@ -70,6 +75,13 @@ function parseRouteCoordinates(routeData: string | null): [number, number][] {
   }
 }
 
+/** Only treat a string as a valid image URL if it starts with http(s):// */
+function toImageUrl(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+}
+
 function parseWaypoints(waypointsData: string | null): Waypoint[] {
   if (!waypointsData || waypointsData === '[]') return [];
   try {
@@ -78,7 +90,7 @@ function parseWaypoints(waypointsData: string | null): Waypoint[] {
       id: String(i),
       name: (w.name as string) ?? 'Waypoint',
       note: (w.note as string) ?? '',
-      imageUrl: ((w.imageUrl ?? w.photoUrl) as string) ?? '',
+      imageUrl: toImageUrl(w.imageUrl ?? w.photoUrl ?? w.photo),
       lat: Number(w.lat ?? w.latitude ?? 0),
       lng: Number(w.lng ?? w.longitude ?? 0),
       timestamp: (w.timestamp as string) ?? new Date().toISOString(),
@@ -112,6 +124,7 @@ export function mapBackendTrip(trip: BackendTrip): Trail {
     id: String(trip.id),
     title: trip.title,
     username: trip.user.username,
+    userEmail: trip.user.email ?? '',
     userAvatar: avatarInitials(trip.user.username),
     description: trip.description ?? '',
     status: trip.status,
@@ -123,6 +136,8 @@ export function mapBackendTrip(trip: BackendTrip): Trail {
     coverImage: '',
     createdAt: `#${trip.id}`,   // No timestamp in DB yet — show trip number
     tags,
+    published: trip.published ?? false,
+    approved: trip.approved ?? false,
   };
 }
 
@@ -136,10 +151,44 @@ export async function fetchAllTrails(): Promise<Trail[]> {
   return data.map(mapBackendTrip);
 }
 
+/** Fetch only approved trails (GET /api/trips/approved) */
+export async function fetchApprovedTrails(): Promise<Trail[]> {
+  const res = await fetch(`${BASE_URL}/trips/approved`);
+  if (!res.ok) throw new Error(`Failed to fetch approved trails: ${res.status}`);
+  const data: BackendTrip[] = await res.json();
+  return data.map(mapBackendTrip);
+}
+
 /** Fetch a single trail by ID (GET /api/trips/{id}) */
 export async function fetchTrailById(id: string): Promise<Trail> {
   const res = await fetch(`${BASE_URL}/trips/${id}`);
   if (!res.ok) throw new Error(`Failed to fetch trail ${id}: ${res.status}`);
   const data: BackendTrip = await res.json();
   return mapBackendTrip(data);
+}
+
+/** Shape of full User entity returned by GET /api/users/{id} */
+export interface FullUser {
+  id: number;
+  username: string;
+  email: string;
+  phoneNumber: string | null;
+  address: string | null;
+  profileImageUrl: string | null;
+  status: string;
+}
+
+/** Fetch full user profile details by ID (GET /api/users/{id}) */
+export async function fetchUserDetails(userId: number): Promise<FullUser> {
+  const res = await fetch(`${BASE_URL}/users/${userId}`);
+  if (!res.ok) throw new Error(`Failed to fetch user profile: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch all trips created by a specific user (GET /api/trips/user/{userId}) */
+export async function fetchUserTrails(userId: number): Promise<Trail[]> {
+  const res = await fetch(`${BASE_URL}/trips/user/${userId}`);
+  if (!res.ok) throw new Error(`Failed to fetch user trails: ${res.status}`);
+  const data: BackendTrip[] = await res.json();
+  return data.map(mapBackendTrip);
 }

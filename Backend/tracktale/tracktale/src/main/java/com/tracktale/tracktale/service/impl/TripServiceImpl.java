@@ -156,6 +156,44 @@ public class TripServiceImpl implements TripService {
     }
 
     // -------------------------------------------------------------------------
+    // Get Approved Trips — public Explore page (only published + approved)
+    // -------------------------------------------------------------------------
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Trip> getApprovedTrips() {
+        return tripRepository.findAllByPublishedTrueAndApprovedTrueOrderByIdDesc();
+    }
+
+    // -------------------------------------------------------------------------
+    // Publish — user submits completed trail for admin review
+    // -------------------------------------------------------------------------
+
+    @Override
+    public Trip publishTrip(Long tripId) {
+        Trip trip = findTripOrThrow(tripId);
+        if (trip.getStatus() != TripStatus.COMPLETED) {
+            throw new RuntimeException("Only completed trips can be published");
+        }
+        trip.setPublished(true);
+        return tripRepository.save(trip);
+    }
+
+    // -------------------------------------------------------------------------
+    // Approve — admin approves a published trail for public display
+    // -------------------------------------------------------------------------
+
+    @Override
+    public Trip approveTrip(Long tripId) {
+        Trip trip = findTripOrThrow(tripId);
+        if (!trip.isPublished()) {
+            throw new RuntimeException("Trip must be published before it can be approved");
+        }
+        trip.setApproved(true);
+        return tripRepository.save(trip);
+    }
+
+    // -------------------------------------------------------------------------
     // Helper
     // -------------------------------------------------------------------------
 

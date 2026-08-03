@@ -7,11 +7,14 @@
 //   • Register a new account via POST /api/users
 //   • Login via POST /api/auth/login
 //   • Logout (clears in-memory state)
+//   • Upload and update profile picture
 // -----------------------------------------------------------
 
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
+import '../services/cloudinary_service.dart';
 
 /// Describes the current auth operation state.
 enum AuthState { idle, loading, success, error }
@@ -19,11 +22,13 @@ enum AuthState { idle, loading, success, error }
 class AuthController extends ChangeNotifier {
   // ── Dependencies ──────────────────────────────────────────
   final ApiService _api = ApiService();
+  final CloudinaryService _cloudinary = CloudinaryService();
 
   // ── State ─────────────────────────────────────────────────
   UserModel? _currentUser;
   AuthState _authState = AuthState.idle;
   String _errorMessage = '';
+  bool _isUploadingProfileImage = false;
 
   // ── Getters ───────────────────────────────────────────────
   UserModel? get currentUser => _currentUser;
@@ -31,6 +36,7 @@ class AuthController extends ChangeNotifier {
   String get errorMessage => _errorMessage;
   bool get isLoggedIn => _currentUser != null;
   bool get isLoading => _authState == AuthState.loading;
+  bool get isUploadingProfileImage => _isUploadingProfileImage;
 
   // ═══════════════════════════════════════════════════════════
   // register
@@ -95,6 +101,45 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // updateProfileImage
+  // Uploads an image to Cloudinary, saves the URL to backend,
+  // and updates the local user model.
+  // ═══════════════════════════════════════════════════════════
+  Future<bool> updateProfileImage(File imageFile) async {
+    if (_currentUser == null) return false;
+
+    _isUploadingProfileImage = true;
+    notifyListeners();
+
+    try {
+      debugPrint('[AuthController] 📤 Uploading profile image to Cloudinary...');
+
+      // 1. Upload to Cloudinary
+      final cloudinaryUrl = await _cloudinary.uploadImage(imageFile);
+      debugPrint('[AuthController] ✅ Cloudinary URL: $cloudinaryUrl');
+
+      // 2. Save URL to backend
+      final updatedUserData = await _api.updateProfileImage(
+        userId: _currentUser!.id,
+        profileImageUrl: cloudinaryUrl,
+      );
+      debugPrint('[AuthController] ✅ Profile image saved to backend');
+
+      // 3. Update local user model
+      _currentUser = UserModel.fromJson(updatedUserData);
+
+      _isUploadingProfileImage = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('[AuthController] ❌ Profile image update failed: $e');
+      _isUploadingProfileImage = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   // ── Private Helpers ──────────────────────────────────────
 
   void _setLoading() {
@@ -114,3 +159,4 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 }
+
