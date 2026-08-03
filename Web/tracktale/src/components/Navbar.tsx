@@ -60,7 +60,7 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Auth / User Area */}
+            {/* Auth & Get App Area */}
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export default function Navbar() {
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
                       <span className="text-white text-xs font-bold">{avatarInitials(user.username)}</span>
                     </div>
-                    <span className="text-slate-300 text-sm font-medium max-w-[120px] truncate">{user.username}</span>
+                    <span className="text-slate-300 text-sm font-medium max-w-[110px] truncate">{user.username}</span>
                   </div>
                   <button
                     onClick={logout}
@@ -81,11 +81,26 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setAuthOpen(true)}
-                  className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-semibold rounded-lg hover:from-emerald-400 hover:to-cyan-400 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+                  className="px-4 py-2 text-slate-300 hover:text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all"
                 >
                   Login
                 </button>
               )}
+
+              {/* Get App Button */}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert('TravelTrace Mobile App — Available for Android & iOS! Download from Google Play or Apple App Store.');
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-semibold rounded-lg hover:from-emerald-400 hover:to-cyan-400 transition-all duration-200 shadow-lg shadow-emerald-500/20 flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Get App
+              </a>
             </div>
 
             {/* Mobile Hamburger */}
@@ -119,7 +134,7 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-2 px-4">
+              <div className="pt-2 px-4 space-y-2">
                 {user ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -138,11 +153,22 @@ export default function Navbar() {
                 ) : (
                   <button
                     onClick={() => { setAuthOpen(true); setMenuOpen(false); }}
-                    className="block w-full text-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-semibold rounded-lg"
+                    className="block w-full text-center px-4 py-2 bg-slate-800 text-slate-200 text-sm font-semibold rounded-lg hover:bg-slate-700"
                   >
                     Login
                   </button>
                 )}
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    alert('TravelTrace Mobile App — Available for Android & iOS!');
+                  }}
+                  className="block w-full text-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-semibold rounded-lg"
+                >
+                  Get App
+                </a>
               </div>
             </div>
           )}
