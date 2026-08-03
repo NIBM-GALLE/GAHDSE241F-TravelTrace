@@ -38,13 +38,13 @@ function TrailCard({ trail, rank }: { trail: TrailWithStats; rank?: number }) {
     return `${x},${y}`;
   };
 
-  const isPopular = (rank !== undefined && rank <= 3) || trail.reviewCount > 0;
+  const isPopular = trail.reviewCount > 0;
 
   return (
     <Link
       to={`/trail/${trail.id}`}
       className={`group bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-300 flex flex-col relative ${
-        rank === 1
+        rank === 1 && trail.reviewCount > 0
           ? 'border-amber-500/50 shadow-lg shadow-amber-500/10 hover:border-amber-400'
           : isPopular
           ? 'border-emerald-500/40 hover:border-emerald-400 shadow-lg shadow-emerald-500/5'
@@ -93,8 +93,8 @@ function TrailCard({ trail, rank }: { trail: TrailWithStats; rank?: number }) {
             <span className={`text-xs font-bold ${sc.text}`}>{trail.status}</span>
           </div>
 
-          {/* Popular Rank Badge */}
-          {rank !== undefined && rank <= 3 && (
+          {/* Popular Rank Badge — ONLY for trails with reviewCount > 0 */}
+          {rank !== undefined && rank <= 3 && trail.reviewCount > 0 && (
             <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold shadow-md ${
               rank === 1
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950'
