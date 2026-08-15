@@ -24,7 +24,17 @@ interface UserAuthContextType {
   user: WebUser | null;
   login: (email: string, password: string) => Promise<{ ok: boolean; message: string }>;
   register: (data: RegisterData) => Promise<{ ok: boolean; message: string }>;
+  updateProfile: (data: UpdateProfileData) => Promise<{ ok: boolean; message: string }>;
   logout: () => void;
+}
+
+export interface UpdateProfileData {
+  username?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  password?: string;
+  profileImageUrl?: string;
 }
 
 interface RegisterData {
@@ -119,6 +129,37 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ── Update Profile ─────────────────────────────────────────
+  const updateProfile = useCallback(async (data: UpdateProfileData) => {
+    if (!user) return { ok: false, message: 'Not logged in' };
+    try {
+      const res = await fetch(`${BASE_URL}/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        const webUser: WebUser = {
+          id: updated.id,
+          username: updated.username,
+          email: updated.email,
+          profileImageUrl: updated.profileImageUrl ?? null,
+        };
+        setUser(webUser);
+        persist(webUser);
+        return { ok: true, message: 'Profile updated successfully!' };
+      }
+
+      if (res.status === 409) return { ok: false, message: 'This email is already registered by another user.' };
+      const body = await res.text();
+      return { ok: false, message: body || 'Profile update failed.' };
+    } catch {
+      return { ok: false, message: 'Network error. Please try again.' };
+    }
+  }, [user]);
+
   // ── Logout ─────────────────────────────────────────────────
   const logout = useCallback(() => {
     setUser(null);
@@ -126,7 +167,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserAuthContext.Provider value={{ user, login, register, logout }}>
+    <UserAuthContext.Provider value={{ user, login, register, updateProfile, logout }}>
       {children}
     </UserAuthContext.Provider>
   );

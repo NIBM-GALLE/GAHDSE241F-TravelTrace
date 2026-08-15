@@ -1038,6 +1038,250 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // ── Edit Profile Dialog Bottom Sheet ───────────────────────
+  Future<void> _showEditProfileDialog(AuthController auth) async {
+    final user = auth.currentUser;
+    if (user == null) return;
+
+    final usernameController = TextEditingController(text: user.username);
+    final emailController = TextEditingController(text: user.email);
+    final phoneController = TextEditingController(text: user.phoneNumber);
+    final addressController = TextEditingController(text: user.address);
+    final passwordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    bool isSubmitting = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F1E2E),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 4),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6EE7F7).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.edit_note_rounded,
+                          color: Color(0xFF6EE7F7),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Edit Profile Details',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white38,
+                          size: 22,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white10, height: 20),
+                // Scrollable Form
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _sectionLabel('Username *'),
+                          TextFormField(
+                            controller: usernameController,
+                            style: const TextStyle(color: Colors.white),
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? 'Username is required'
+                                : null,
+                            decoration: _inputDecoration(
+                              'e.g. John Doe',
+                              Icons.person_outline_rounded,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _sectionLabel('Email Address *'),
+                          TextFormField(
+                            controller: emailController,
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? 'Email is required'
+                                : null,
+                            decoration: _inputDecoration(
+                              'e.g. john@example.com',
+                              Icons.email_outlined,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _sectionLabel('Phone Number'),
+                          TextFormField(
+                            controller: phoneController,
+                            style: const TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.phone,
+                            decoration: _inputDecoration(
+                              'e.g. 0771234567',
+                              Icons.phone_android_rounded,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _sectionLabel('Address'),
+                          TextFormField(
+                            controller: addressController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: _inputDecoration(
+                              'e.g. Galle, Sri Lanka',
+                              Icons.location_on_outlined,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _sectionLabel('New Password (Optional)'),
+                          TextFormField(
+                            controller: passwordController,
+                            style: const TextStyle(color: Colors.white),
+                            obscureText: true,
+                            decoration: _inputDecoration(
+                              'Leave blank to keep unchanged',
+                              Icons.lock_outline_rounded,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: isSubmitting
+                                  ? null
+                                  : () async {
+                                      if (!formKey.currentState!.validate()) return;
+                                      setModalState(() => isSubmitting = true);
+
+                                      final success = await auth.updateProfile(
+                                        username: usernameController.text.trim(),
+                                        email: emailController.text.trim(),
+                                        phoneNumber: phoneController.text.trim(),
+                                        address: addressController.text.trim(),
+                                        password: passwordController
+                                                .text
+                                                .trim()
+                                                .isNotEmpty
+                                            ? passwordController.text.trim()
+                                            : null,
+                                      );
+
+                                      setModalState(() => isSubmitting = false);
+
+                                      if (ctx.mounted) {
+                                        Navigator.pop(ctx);
+                                      }
+
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'Profile updated successfully!'
+                                                  : (auth.errorMessage.isNotEmpty
+                                                      ? auth.errorMessage
+                                                      : 'Failed to update profile'),
+                                            ),
+                                            backgroundColor: success
+                                                ? const Color(0xFF22C55E)
+                                                : Colors.redAccent,
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            margin: const EdgeInsets.all(16),
+                                          ),
+                                        );
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6EE7F7),
+                                foregroundColor: const Color(0xFF0A1628),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: isSubmitting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF0A1628),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Save Profile Changes',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ── User Account View Content ──────────────────────────────
   Widget _buildAccountContent() {
     final auth = context.watch<AuthController>();
@@ -1298,13 +1542,53 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Account Information',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Account Information',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _showEditProfileDialog(auth),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF6EE7F7).withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: const Color(0xFF6EE7F7).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.edit_rounded,
+                                          size: 13,
+                                          color: Color(0xFF6EE7F7),
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Edit',
+                                          style: TextStyle(
+                                            color: Color(0xFF6EE7F7),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 16),
                             _buildInfoRow(
@@ -1327,7 +1611,31 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
+
+                      // Edit Profile Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showEditProfileDialog(auth),
+                          icon: const Icon(Icons.edit_note_rounded, size: 22),
+                          label: const Text('Edit Profile Details'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6EE7F7).withOpacity(0.15),
+                            foregroundColor: const Color(0xFF6EE7F7),
+                            side: BorderSide(
+                              color: const Color(0xFF6EE7F7).withOpacity(0.4),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
 
                       // Sign Out Button
                       SizedBox(

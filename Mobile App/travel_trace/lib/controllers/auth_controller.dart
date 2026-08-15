@@ -140,6 +140,38 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // updateProfile
+  // Updates user profile details on backend & localUserModel.
+  // ═══════════════════════════════════════════════════════════
+  Future<bool> updateProfile({
+    required String username,
+    required String email,
+    required String phoneNumber,
+    required String address,
+    String? password,
+  }) async {
+    if (_currentUser == null) return false;
+
+    _setLoading();
+    try {
+      final updatedUserData = await _api.updateUserProfile(
+        userId: _currentUser!.id,
+        username: username,
+        email: email,
+        phoneNumber: phoneNumber,
+        address: address,
+        password: password,
+      );
+      _currentUser = UserModel.fromJson(updatedUserData);
+      _setSuccess();
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
   // ── Private Helpers ──────────────────────────────────────
 
   void _setLoading() {
