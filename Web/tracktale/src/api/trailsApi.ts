@@ -192,3 +192,27 @@ export async function fetchUserTrails(userId: number): Promise<Trail[]> {
   const data: BackendTrip[] = await res.json();
   return data.map(mapBackendTrip);
 }
+
+export interface UpdateProfilePayload {
+  username?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  password?: string;
+  profileImageUrl?: string;
+}
+
+/** Update user profile details (PUT /api/users/{userId}) */
+export async function updateUserProfile(userId: number, payload: UpdateProfilePayload): Promise<FullUser> {
+  const res = await fetch(`${BASE_URL}/users/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `Failed to update profile: ${res.status}`);
+  }
+  return res.json();
+}
+

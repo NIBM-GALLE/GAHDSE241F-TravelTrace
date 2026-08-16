@@ -304,6 +304,45 @@ class ApiService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  // ── PUT /api/users/{id} ──────────────────────────────────────
+  /// Update user profile details (username, email, phoneNumber, address, password).
+  /// Returns the updated user map.
+  Future<Map<String, dynamic>> updateUserProfile({
+    required String userId,
+    required String username,
+    required String email,
+    required String phoneNumber,
+    required String address,
+    String? password,
+    String? profileImageUrl,
+  }) async {
+    final uri = Uri.parse('$baseUrl/users/$userId');
+
+    final bodyMap = <String, dynamic>{
+      'username': username,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'address': address,
+    };
+    if (password != null && password.trim().isNotEmpty) {
+      bodyMap['password'] = password.trim();
+    }
+    if (profileImageUrl != null && profileImageUrl.trim().isNotEmpty) {
+      bodyMap['profileImageUrl'] = profileImageUrl.trim();
+    }
+
+    final response = await http
+        .put(
+          uri,
+          headers: _headers,
+          body: jsonEncode(bodyMap),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    _assertSuccess(response, 'updateUserProfile');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   // ═══════════════════════════════════════════════════════════
   // REVIEW / FEEDBACK ENDPOINTS
   // ═══════════════════════════════════════════════════════════

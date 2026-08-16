@@ -130,11 +130,10 @@ export default function AdminLayout() {
                       key={item.path}
                       to={item.path}
                       end={item.path === '/admin/dashboard'}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all ${
-                        isActive
-                          ? 'text-blue-600 font-bold'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
-                      }`}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all ${isActive
+                        ? 'text-blue-600 font-bold'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                        }`}
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon className="w-[18px] h-[18px]" />

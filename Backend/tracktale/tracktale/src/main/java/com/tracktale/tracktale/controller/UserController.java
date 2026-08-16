@@ -3,6 +3,7 @@ package com.tracktale.tracktale.controller;
 import com.tracktale.tracktale.dto.CreateUserRequest;
 import com.tracktale.tracktale.dto.LoginRequest;
 import com.tracktale.tracktale.dto.UpdateProfileImageRequest;
+import com.tracktale.tracktale.dto.UpdateProfileRequest;
 import com.tracktale.tracktale.dto.UserStatusRequest;
 import com.tracktale.tracktale.dto.UserWithStatsResponse;
 import com.tracktale.tracktale.model.TripStatus;
@@ -172,6 +173,51 @@ public class UserController {
 
         User user = optUser.get();
         user.setProfileImageUrl(request.getProfileImageUrl());
+        User saved = userRepository.save(user);
+        return ResponseEntity.ok(saved);
+    }
+
+    // -------------------------------------------------------------------------
+    // PUT /api/users/{id}
+    // Update profile details (username, email, phoneNumber, address, password)
+    // Body: { "username": "John", "email": "john@example.com", "phoneNumber": "077...", "address": "...", "password": "..." }
+    // -------------------------------------------------------------------------
+    @PutMapping("/api/users/{id}")
+    public ResponseEntity<?> updateUserProfile(
+            @PathVariable Long id,
+            @RequestBody UpdateProfileRequest request) {
+        Optional<User> optUser = userRepository.findById(id);
+        if (optUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = optUser.get();
+
+        // Check if email is being changed and if it is already registered by another user
+        if (request.getEmail() != null && !request.getEmail().equalsIgnoreCase(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Email already registered: " + request.getEmail());
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
+            user.setUsername(request.getUsername().trim());
+        }
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress().trim());
+        }
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            user.setPassword(request.getPassword().trim());
+        }
+        if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().trim().isEmpty()) {
+            user.setProfileImageUrl(request.getProfileImageUrl().trim());
+        }
+
         User saved = userRepository.save(user);
         return ResponseEntity.ok(saved);
     }
